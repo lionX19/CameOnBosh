@@ -1,0 +1,251 @@
+:root {
+  --primary-color: #ffcc00;
+  --background-dark: #1e1e1e;
+  --container-dark: #282c34;
+  --text-light: #ffffff;
+  --option-bg: #333;
+  --option-hover: #444;
+}
+
+.dark {
+  --primary-color: #ffcc00;
+  --background-dark: #1e1e1e;
+  --container-dark: #282c34;
+  --text-light: #ffffff;
+  --option-bg: #333;
+  --option-hover: #444;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: sans-serif;
+  background-color: var(--background-dark);
+  color: var(--text-light);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding-top: 50px;
+}
+
+.menu {
+  position: fixed;
+  display: flex;
+  width: 100%;
+  height: 80px;
+  top: -80px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: var(--container-dark);
+  border-bottom: 5px var(--primary-color) solid;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+  transition: top 0.3s ease;
+  z-index: 1000;
+}
+
+.menu h1 {
+  color: var(--primary-color);
+  font-size: 1.5em;
+}
+
+.menu.visible {
+  top: 0;
+}
+
+.menu ul {
+  display: flex;
+  list-style: none;
+  gap: 20px;
+}
+
+.menu ul li {
+  background-color: var(--container-dark);
+  border: 1px var(--primary-color) solid;
+  border-radius: 20px;
+  padding: 10px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+.menu ul li a {
+  color: var(--text-light);
+  text-decoration: none;
+  font-size: 1.2em;
+  font-weight: bold;
+  text-transform: uppercase;
+  transition: color 0.3s ease;
+  padding: 0 10px;
+}
+
+#details-des-resultats {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: var(--container-dark);
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.result-item {
+  margin-bottom: 15px;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.result-item.correct {
+  background-color: #2e7d32; /* Vert pour les réponses correctes */
+  color: #ffffff;
+}
+
+.result-item.incorrect {
+  background-color: #c62828; /* Rouge pour les réponses incorrectes */
+  color: #ffffff;
+}
+
+.result-item p {
+  margin: 5px 0;
+}
+
+#quiz-container {
+  background-color: var(--container-dark);
+  border-radius: 10px;
+  padding: 20px;
+  width: 500px;
+  max-width: 95vw;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+#quiz-header {
+  text-align: center;
+  color: var(--primary-color);
+  margin-bottom: 20px;
+}
+
+#question-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 0.9em;
+}
+
+#question-text {
+  font-size: 1.1em;
+  margin-bottom: 20px;
+  min-height: 60px;
+}
+
+.answer-option {
+  background-color: var(--option-bg);
+  border: none;
+  border-radius: 5px;
+  color: var(--text-light);
+  cursor: pointer;
+  display: block;
+  margin-bottom: 10px;
+  padding: 10px;
+  text-align: left;
+  width: 100%;
+  font-size: 1em;
+  transition: background-color 0.2s;
+}
+
+.answer-option:hover {
+  background-color: var(--option-hover);
+}
+
+.answer-option.correct {
+  background-color: #2e7d32;
+}
+
+.answer-option.incorrect {
+  background-color: #c62828;
+}
+
+#score-display {
+  margin-top: 20px;
+  text-align: left;
+  font-size: 0.9em;
+}
+
+#timer-display {
+  background-color: var(--text-light);
+  color: #000;
+  text-align: center;
+  font-size: 1.2em;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 20px auto;
+  width: 100px;
+}
+
+#controls {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+#controls button {
+  background-color: #555;
+  border: none;
+  border-radius: 5px;
+  color: var(--text-light);
+  cursor: pointer;
+  padding: 10px 15px;
+  font-size: 1em;
+  transition: background-color 0.2s;
+}
+
+#controls button:hover {
+  background-color: #666;
+}
+
+#controls button:disabled {
+  background-color: #444;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+#outer-container {
+  background-color: var(--primary-color);
+  padding: 20px;
+  border-radius: 15px;
+  margin: 30px 0;
+}
+
+#credit {
+  text-align: center;
+  margin-top: 20px;
+  color: var(--primary-color);
+}
+
+#result-container {
+  display: none;
+  text-align: center;
+  margin-top: 20px;
+}
+
+#result-container h2 {
+  color: var(--primary-color);
+  margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+  .menu ul {
+    gap: 10px;
+  }
+
+  .menu ul li a {
+    font-size: 0.9em;
+    padding: 0 5px;
+  }
+
+  #quiz-container {
+    width: 95%;
+  }
+}

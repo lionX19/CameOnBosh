@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linux Terminal Simulator</title>
+    <link rel="stylesheet" href="css/simulator.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div class="menu">
+        <h1>CameOnBosh</h1>
+        <ul>
+          <li><a href="../index.html">Acceuil</a></li>
+          <!--niveau de dificulte-->
+          <li><a href="quiz.html">Quiz</a></li>
+          <!--performannces de jeu-->
+          <li><a href="Linux_simulator.html">Simulateurs</a></li>
+          <!--niveau de dificulte-->
+          <li><a href="#">Performance</a></li>
+          <!--performannces-->
+        </ul>
+      </div>
+    <div class="body">
+        <div id="terminal">
+            <div class="terminal-header">
+                <h1 class="terminal-title">Linux Terminal Simulator</h1>
+                <button id="theme-toggle">
+                    <svg id="dark-icon" class="theme-icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
+                    </svg>
+                    <svg id="light-icon" class="theme-icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="terminal-output"></div>
+            <div id="command-line">
+                <span id="prompt"></span>
+                <span id="command-input" contenteditable="true" spellcheck="false"></span>
+                <span class="cursor"></span>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/simulator.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>

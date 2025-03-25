@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CameOnBosh</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+
+  <body>
+    <div class="menu">
+      <h1>CameOnBosh</h1>
+      
+      <ul>
+        <li><a href="../index.html">Acceuil</a></li>
+        <!--niveau de dificulte-->
+        <li><a href="quiz.html">Quiz</a></li>
+        <!--performannces de jeu-->
+        <li><a href="Linux_simulator.html">Simulateurs</a></li>
+        <!--niveau de dificulte-->
+        <li><a href="#">Performance</a></li>
+        <!--performannces-->
+      </ul>
+    </div>
+
+    <div id="outer-container">
+      <div id="quiz-container">
+        <div class="main-quiz">
+          <div id="quiz-header">
+            <h1>Quiz</h1>
+            <p>Révision de JavaScript</p>
+          </div>
+
+          <div id="question-info">
+            <span id="question-number">Question 1/5</span>
+            <span id="question-score">Score: 0/5</span>
+          </div>
+
+          <div id="question-text">Chargement des questions...</div>
+
+          <div id="answer-options">
+            <button class="answer-option" data-index="0">Option 1</button>
+            <button class="answer-option" data-index="1">Option 2</button>
+            <button class="answer-option" data-index="2">Option 3</button>
+            <button class="answer-option" data-index="3">Option 4</button>
+          </div>
+
+          <div id="score-display">Votre score: 0</div>
+          <div id="timer-display">00:00:00</div>
+        </div>
+
+        <div id="result-container" class="hidden">
+          <h2>Quiz terminé!</h2>
+          <p id="final-score">Score final: 0/10</p>
+          <p id="time-taken">Temps écoulé: 00:00:00</p>
+          <div id="details-des-resultats"></div>
+          <!-- Conteneur pour les détails des résultats -->
+        </div>
+
+        <div id="controls">
+          <button id="prev-button" disabled>Précédent</button>
+          <div>
+            <button id="start-button">Démarrer</button>
+            <button id="reset-button" style="display: none">Recommencer</button>
+          </div>
+          <button id="next-button" disabled>Suivant</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="credit">CameOnBosh</div>
+
+    <script src="js/script.js"></script>
+  </body>
+</html>
