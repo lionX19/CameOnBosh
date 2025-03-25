@@ -1,0 +1,186 @@
+
+        /* Base styles */
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --terminal-bg: #f8f8f8;
+            --terminal-text: #333333;
+            --prompt-color: #0066cc;
+            --success-color: #006600;
+            --error-color: #cc0000;
+            --directory-color: #0066cc;
+            --file-color: #333333;
+            --executable-color: #006600;
+            --border-color: #dddddd;
+            --hover-color: #f0f0f0;
+        }
+
+        /* Dark mode variables */
+        html.dark {
+            --bg-color: #1a1a1a;
+            --text-color: #CDD6F4;
+            --terminal-bg: #282c34;
+            --terminal-text:rgb(255, 255, 255);
+            --prompt-color: #89B4FA;
+            --success-color: #A6E3A1;
+            --error-color: #F38BA8;
+            --directory-color: #89B4FA;
+            --file-color: #CDD6F4;
+            --executable-color: #A6E3A1;
+            --border-color: #ffcc00;
+            --hover-color: #2a2a2a;
+        }
+
+        .body {
+            font-family: 'JetBrains Mono', Menlo, Monaco, Consolas, monospace;
+            font-size: 16px;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* Terminal container */
+        #terminal {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: var(--terminal-bg);
+            color: var(--terminal-text);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            padding: 16px;
+        }
+
+        .terminal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .terminal-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--terminal-text);
+        }
+
+        #theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        #theme-toggle:hover {
+            background-color: var(--hover-color);
+        }
+
+        #theme-toggle svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Terminal output area */
+        #terminal-output {
+            background-color: var(--terminal-bg);
+            color: var(--terminal-text);
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 8px;
+        }
+
+        /* Custom scrollbar */
+        #terminal-output::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        #terminal-output::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+        
+        #terminal-output::-webkit-scrollbar-thumb {
+            background: rgba(128, 128, 128, 0.5);
+            border-radius: 4px;
+        }
+
+        html.dark #terminal-output::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        html.dark #terminal-output::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Command line input area */
+        #command-line {
+            display: flex;
+            align-items: center;
+            background-color: var(--terminal-bg);
+            color: var(--terminal-text);
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        #prompt {
+            color: var(--prompt-color);
+            margin-right: 8px;
+        }
+
+        #command-input {
+            flex-grow: 1;
+            outline: none;
+            background-color: transparent;
+            color: var(--terminal-text);
+        }
+
+        /* Blinking cursor */
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 18px;
+            background-color: var(--terminal-text);
+            animation: blink 1s step-end infinite;
+            vertical-align: bottom;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Terminal output styling */
+        .directory {
+            color: var(--directory-color);
+        }
+
+        .file {
+            color: var(--file-color);
+        }
+
+        .executable {
+            color: var(--executable-color);
+        }
+
+        .error {
+            color: var(--error-color);
+        }
+
+        .prompt {
+            color: var(--prompt-color);
+        }
+
+        /* File listing style */
+        .files-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
