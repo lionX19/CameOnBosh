@@ -1,0 +1,1887 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CameOnBosh - Simulateur Cisco</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary-color: #5d5cde;
+        --background-light: #ffffff;
+        --background-dark: #181818;
+        --text-light: #333333;
+        --text-dark: #f0f0f0;
+        --success-color: #4caf50;
+        --error-color: #f44336;
+        --warning-color: #ff9800;
+      }
+
+      .dark {
+        --primary-color: #5d5cde;
+        --background: var(--background-dark);
+        --text-color: var(--text-dark);
+        --terminal-bg: #222222;
+      }
+
+      body {
+        font-family: "Courier New", monospace;
+        background-color: var(--background-light);
+        color: var(--text-light);
+        transition: background-color 0.3s, color 0.3s;
+      }
+
+      .dark body {
+        background-color: var(--background-dark);
+        color: var(--text-dark);
+      }
+
+      /* Menu styling */
+      .menu {
+        position: fixed;
+        top: -80px;
+        left: 0;
+        right: 0;
+        height: 80px;
+        background-color: rgba(24, 24, 24, 0.95);
+        color: #ffffff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+        z-index: 1000;
+        transition: top 0.3s ease;
+        border-bottom: 3px solid var(--primary-color);
+      }
+
+      .menu.visible {
+        top: 0;
+      }
+
+      .menu h1 {
+        color: var(--primary-color);
+        font-weight: bold;
+        font-size: 1.5rem;
+      }
+
+      .menu ul {
+        display: flex;
+        list-style: none;
+        gap: 15px;
+      }
+
+      .menu ul li a {
+        color: white;
+        text-decoration: none;
+        padding: 8px 15px;
+        border-radius: 20px;
+        border: 1px solid var(--primary-color);
+        transition: all 0.2s;
+        font-weight: 500;
+        display: block;
+      }
+
+      .menu ul li a:hover {
+        background-color: var(--primary-color);
+        color: #ffffff;
+      }
+
+      /* Terminal styling */
+      #terminal {
+        max-width: 1000px;
+        margin: 100px auto 20px;
+        background-color: #000;
+        color: #00ff00;
+        font-family: "Courier New", monospace;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        height: 70vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #terminal-header {
+        background-color: #333;
+        color: white;
+        padding: 10px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #555;
+      }
+
+      #network-diagram {
+        height: 150px;
+        background-color: #1e1e1e;
+        border-bottom: 1px solid #555;
+        overflow: hidden;
+        position: relative;
+        transition: height 0.3s;
+      }
+
+      #terminal-content {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 10px 15px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        line-height: 1.5;
+      }
+
+      #terminal-content::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      #terminal-content::-webkit-scrollbar-track {
+        background: #111;
+      }
+
+      #terminal-content::-webkit-scrollbar-thumb {
+        background: #444;
+        border-radius: 4px;
+      }
+
+      #input-line {
+        display: flex;
+        padding: 5px 15px;
+        background-color: #111;
+        border-top: 1px solid #333;
+      }
+
+      #prompt {
+        color: #00ff00;
+        margin-right: 8px;
+      }
+
+      #command-input {
+        background-color: transparent;
+        border: none;
+        outline: none;
+        color: #00ff00;
+        font-family: inherit;
+        flex-grow: 1;
+        font-size: 16px;
+      }
+
+      .success {
+        color: var(--success-color);
+      }
+
+      .error {
+        color: var(--error-color);
+      }
+
+      .warning {
+        color: var(--warning-color);
+      }
+
+      #credit {
+        text-align: center;
+        padding: 20px;
+        color: var(--primary-color);
+        font-weight: bold;
+      }
+
+      /* Options panel */
+      #options-panel {
+        background-color: #222;
+        position: fixed;
+        right: -300px;
+        top: 100px;
+        width: 300px;
+        height: auto;
+        padding: 20px;
+        border-radius: 8px 0 0 8px;
+        transition: right 0.3s;
+        z-index: 990;
+        box-shadow: -3px 0 10px rgba(0, 0, 0, 0.2);
+      }
+
+      #options-panel.visible {
+        right: 0;
+      }
+
+      #options-toggle {
+        position: absolute;
+        left: -40px;
+        top: 20px;
+        background-color: #222;
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 5px 0 0 5px;
+        cursor: pointer;
+      }
+
+      /* Responsive styles */
+      @media (max-width: 768px) {
+        #terminal {
+          margin: 100px 15px 20px;
+          height: 60vh;
+        }
+
+        .menu ul li a {
+          padding: 6px 10px;
+          font-size: 0.9rem;
+        }
+
+        #network-diagram {
+          height: 100px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .menu {
+          padding: 0 10px;
+        }
+
+        .menu ul {
+          gap: 5px;
+        }
+
+        .menu ul li a {
+          padding: 5px 8px;
+          font-size: 0.8rem;
+        }
+
+        #command-input {
+          font-size: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="menu">
+      <h1>CameOnBosh</h1>
+      <ul>
+        <li><a href="index.html">Accueil</a></li>
+        <li><a href="quiz.html">Quiz</a></li>
+        <li><a href="cisco-simulator.html">Simulateur Cisco</a></li>
+        <li><a href="performance.html">Performance</a></li>
+      </ul>
+    </div>
+
+    <div id="terminal">
+      <div id="terminal-header">
+        <div class="flex items-center">
+          <h2 class="text-lg font-bold mr-4">Simulateur Cisco</h2>
+          <select
+            id="device-selector"
+            class="bg-gray-700 text-white px-2 py-1 rounded text-sm"
+          >
+            <option value="R1">Router R1</option>
+            <option value="R2">Router R2</option>
+            <option value="R3">Router R3</option>
+            <option value="R4">Router R4</option>
+            <option value="S1">Switch S1</option>
+          </select>
+        </div>
+        <div>
+          <button
+            id="toggle-diagram"
+            class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm mr-2"
+          >
+            Topologie
+          </button>
+          <button
+            id="reset-config"
+            class="bg-red-700 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <div id="network-diagram" style="display: none">
+        <canvas id="topology-canvas" width="1000" height="150"></canvas>
+      </div>
+
+      <div id="terminal-content"></div>
+
+      <div id="input-line">
+        <span id="prompt">></span>
+        <input
+          type="text"
+          id="command-input"
+          autocomplete="off"
+          spellcheck="false"
+          autofocus
+        />
+      </div>
+    </div>
+
+    <div id="options-panel">
+      <button id="options-toggle">⚙️</button>
+      <h3 class="text-white font-bold mb-3">Options</h3>
+
+      <div class="mb-4">
+        <label class="text-white block mb-2">Mode</label>
+        <select
+          id="mode-selector"
+          class="bg-gray-700 text-white px-3 py-2 rounded w-full"
+        >
+          <option value="normal">Standard</option>
+          <option value="guided">Guidé (avec aide)</option>
+          <option value="exam">Exam (sans aide)</option>
+        </select>
+      </div>
+
+      <div class="mb-4">
+        <label class="text-white block mb-2">Topologie</label>
+        <select
+          id="topology-selector"
+          class="bg-gray-700 text-white px-3 py-2 rounded w-full"
+        >
+          <option value="basic">Basique (4 routeurs)</option>
+          <option value="vlan">VLAN et Trunk</option>
+          <option value="acl">ACL et Sécurité</option>
+          <option value="dhcp">DHCP et Helper</option>
+        </select>
+      </div>
+
+      <div class="mb-4">
+        <label class="flex items-center text-white cursor-pointer">
+          <input type="checkbox" id="auto-complete" class="mr-2" />
+          Auto-complétion
+        </label>
+      </div>
+
+      <div class="mb-4">
+        <label class="flex items-center text-white cursor-pointer">
+          <input type="checkbox" id="syntax-highlight" class="mr-2" checked />
+          Coloration syntaxique
+        </label>
+      </div>
+
+      <div class="text-center mt-6">
+        <button
+          id="save-config"
+          class="bg-green-700 hover:bg-green-600 text-white px-4 py-2 rounded"
+        >
+          Sauvegarder Configuration
+        </button>
+      </div>
+    </div>
+
+    <div id="credit">CameOnBosh</div>
+
+    <script>
+      // Support pour le mode sombre
+      if (
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+      ) {
+        document.documentElement.classList.add("dark");
+      }
+
+      window
+        .matchMedia("(prefers-color-scheme: dark)")
+        .addEventListener("change", (event) => {
+          if (event.matches) {
+            document.documentElement.classList.add("dark");
+          } else {
+            document.documentElement.classList.remove("dark");
+          }
+        });
+
+      // Menu déroulant
+      document.addEventListener("DOMContentLoaded", function () {
+        const menu = document.querySelector(".menu");
+        let lastScrollY = window.scrollY;
+
+        // Afficher le menu au démarrage
+        menu.classList.add("visible");
+
+        // Cacher le menu après 3 secondes
+        setTimeout(() => {
+          menu.classList.remove("visible");
+        }, 3000);
+
+        window.addEventListener("scroll", function () {
+          menu.classList.toggle("visible", window.scrollY < lastScrollY);
+          lastScrollY = window.scrollY;
+        });
+
+        document.addEventListener("mousemove", function (event) {
+          menu.classList.toggle("visible", event.clientY < 100);
+        });
+      });
+
+      // Gestion du panneau d'options
+      document
+        .getElementById("options-toggle")
+        .addEventListener("click", function () {
+          document.getElementById("options-panel").classList.toggle("visible");
+        });
+
+      // Gestion de l'affichage du diagramme réseau
+      document
+        .getElementById("toggle-diagram")
+        .addEventListener("click", function () {
+          const diagram = document.getElementById("network-diagram");
+          if (diagram.style.display === "none") {
+            diagram.style.display = "block";
+            drawNetworkTopology();
+          } else {
+            diagram.style.display = "none";
+          }
+        });
+
+      // Fonction pour dessiner la topologie du réseau
+      function drawNetworkTopology() {
+        const canvas = document.getElementById("topology-canvas");
+        const ctx = canvas.getContext("2d");
+        const selectedTopology =
+          document.getElementById("topology-selector").value;
+
+        // Nettoyer le canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Dessiner la topologie de base (4 routeurs en anneau)
+        ctx.fillStyle = "white";
+        ctx.font = "12px Arial";
+
+        // Paramètres pour la disposition
+        const routerRadius = 15;
+        const spacing = 180;
+        const offsetY = 75;
+        const offsetX = canvas.width / 2 - spacing;
+
+        // Dessiner les routeurs
+        ctx.fillStyle = "#5D5CDE";
+
+        // R1
+        ctx.beginPath();
+        ctx.arc(offsetX, offsetY, routerRadius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "white";
+        ctx.fillText("R1", offsetX - 8, offsetY + 4);
+
+        // R2
+        ctx.fillStyle = "#5D5CDE";
+        ctx.beginPath();
+        ctx.arc(offsetX + spacing, offsetY, routerRadius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "white";
+        ctx.fillText("R2", offsetX + spacing - 8, offsetY + 4);
+
+        // R3
+        ctx.fillStyle = "#5D5CDE";
+        ctx.beginPath();
+        ctx.arc(
+          offsetX + spacing,
+          offsetY + spacing * 0.4,
+          routerRadius,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+        ctx.fillStyle = "white";
+        ctx.fillText("R3", offsetX + spacing - 8, offsetY + spacing * 0.4 + 4);
+
+        // R4
+        ctx.fillStyle = "#5D5CDE";
+        ctx.beginPath();
+        ctx.arc(offsetX, offsetY + spacing * 0.4, routerRadius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "white";
+        ctx.fillText("R4", offsetX - 8, offsetY + spacing * 0.4 + 4);
+
+        // Dessiner les connexions
+        ctx.strokeStyle = "#999";
+        ctx.lineWidth = 2;
+
+        // R1 -- R2
+        ctx.beginPath();
+        ctx.moveTo(offsetX + routerRadius, offsetY);
+        ctx.lineTo(offsetX + spacing - routerRadius, offsetY);
+        ctx.stroke();
+        ctx.fillStyle = "white";
+        ctx.fillText(
+          "192.168.2.0/24",
+          offsetX + spacing / 2 - 40,
+          offsetY - 10
+        );
+
+        // R2 -- R3
+        ctx.beginPath();
+        ctx.moveTo(offsetX + spacing, offsetY + routerRadius);
+        ctx.lineTo(offsetX + spacing, offsetY + spacing * 0.4 - routerRadius);
+        ctx.stroke();
+        ctx.fillText(
+          "192.168.4.0/24",
+          offsetX + spacing + 10,
+          offsetY + spacing * 0.2
+        );
+
+        // R3 -- R4
+        ctx.beginPath();
+        ctx.moveTo(offsetX + spacing - routerRadius, offsetY + spacing * 0.4);
+        ctx.lineTo(offsetX + routerRadius, offsetY + spacing * 0.4);
+        ctx.stroke();
+        ctx.fillText(
+          "192.168.6.0/24",
+          offsetX + spacing / 2 - 40,
+          offsetY + spacing * 0.4 + 20
+        );
+
+        // R4 -- R1
+        ctx.beginPath();
+        ctx.moveTo(offsetX, offsetY + routerRadius);
+        ctx.lineTo(offsetX, offsetY + spacing * 0.4 - routerRadius);
+        ctx.stroke();
+        ctx.fillText("192.168.8.0/24", offsetX - 80, offsetY + spacing * 0.2);
+
+        // Ajouter les réseaux LAN
+        ctx.fillStyle = "#4CAF50";
+        ctx.font = "10px Arial";
+
+        // LAN R1
+        ctx.fillText("192.168.1.0/24", offsetX - 90, offsetY);
+
+        // LAN R2
+        ctx.fillText("192.168.3.0/24", offsetX + spacing + 10, offsetY);
+
+        // LAN R3
+        ctx.fillText(
+          "192.168.5.0/24",
+          offsetX + spacing + 10,
+          offsetY + spacing * 0.4
+        );
+
+        // LAN R4
+        ctx.fillText("192.168.7.0/24", offsetX - 90, offsetY + spacing * 0.4);
+
+        // Ajouter des éléments spécifiques selon la topologie sélectionnée
+        if (selectedTopology === "vlan") {
+          // Ajouter un switch entre R2 et LAN
+          ctx.fillStyle = "#FF9800";
+          ctx.beginPath();
+          ctx.rect(offsetX + spacing + 40, offsetY - 10, 30, 20);
+          ctx.fill();
+          ctx.fillStyle = "white";
+          ctx.fillText("S1", offsetX + spacing + 50, offsetY + 4);
+
+          // Connexion R2 -- S1
+          ctx.strokeStyle = "#FF9800";
+          ctx.beginPath();
+          ctx.moveTo(offsetX + spacing + routerRadius, offsetY);
+          ctx.lineTo(offsetX + spacing + 40, offsetY);
+          ctx.stroke();
+
+          // Afficher les VLANs
+          ctx.fillStyle = "#FFD700";
+          ctx.fillText("VLAN 2", offsetX + spacing + 80, offsetY - 10);
+          ctx.fillText("VLAN 3", offsetX + spacing + 80, offsetY + 10);
+        }
+
+        if (selectedTopology === "acl") {
+          // Visualiser les ACLs
+          ctx.fillStyle = "#F44336";
+          ctx.beginPath();
+          ctx.rect(offsetX + spacing / 2 - 15, offsetY - 5, 30, 10);
+          ctx.fill();
+          ctx.fillStyle = "white";
+          ctx.font = "9px Arial";
+          ctx.fillText("ACL", offsetX + spacing / 2 - 8, offsetY + 3);
+
+          // Visualiser le blocage
+          ctx.strokeStyle = "#F44336";
+          ctx.setLineDash([5, 3]);
+          ctx.beginPath();
+          ctx.moveTo(offsetX + spacing / 2, offsetY + 5);
+          ctx.lineTo(offsetX + spacing / 2, offsetY + spacing * 0.4 - 5);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          ctx.fillStyle = "#F44336";
+          ctx.font = "10px Arial";
+          ctx.fillText(
+            "192.168.3.0 → 192.168.7.0 (Denied)",
+            offsetX + spacing / 2 - 80,
+            offsetY + spacing * 0.2
+          );
+        }
+
+        if (selectedTopology === "dhcp") {
+          // Visualiser les serveurs DHCP
+          ctx.fillStyle = "#2196F3";
+          ctx.font = "10px Arial";
+          ctx.fillText("DHCP Server", offsetX - 75, offsetY - 15);
+          ctx.fillText("DHCP Server", offsetX + spacing - 75, offsetY - 15);
+          ctx.fillText(
+            "DHCP Server",
+            offsetX + spacing - 75,
+            offsetY + spacing * 0.4 - 15
+          );
+          ctx.fillText(
+            "DHCP Server",
+            offsetX - 75,
+            offsetY + spacing * 0.4 - 15
+          );
+
+          // Visualiser les IP helpers
+          ctx.fillStyle = "#9C27B0";
+          ctx.font = "9px Arial";
+          ctx.fillText(
+            "ip helper-address",
+            offsetX + spacing / 2 - 40,
+            offsetY + 15
+          );
+        }
+      }
+
+      // Définir les appareils et les commandes supportées
+      const devices = {
+        R1: {
+          hostname: "R1",
+          privileged: false,
+          configMode: false,
+          interfaceMode: "",
+          configRegistry: {
+            interfaces: {
+              "fa0/0": {
+                ip: "192.168.1.1",
+                mask: "255.255.255.0",
+                status: "up",
+              },
+              "se0/1/1": {
+                ip: "192.168.2.1",
+                mask: "255.255.255.0",
+                status: "up",
+              },
+              "se0/1/0": {
+                ip: "192.168.8.2",
+                mask: "255.255.255.0",
+                status: "up",
+              },
+            },
+            routing: {
+              rip: {
+                version: 2,
+                networks: ["192.168.1.0", "192.168.2.0", "192.168.8.0"],
+              },
+              static: [
+                {
+                  destination: "192.168.3.0",
+                  mask: "255.255.255.0",
+                  nextHop: "192.168.2.2",
+                },
+              ],
+            },
+            dhcp: {
+              pools: [
+                {
+                  name: "R1_Pool",
+                  network: "192.168.1.0",
+                  mask: "255.255.255.0",
+                  router: "192.168.1.1",
+                  dns: "8.8.8.8",
+                },
+              ],
+            },
+          },
+        },
+        R2: {
+          hostname: "R2",
+          privileged: false,
+          configMode: false,
+          interfaceMode: "",
+          configRegistry: {
+            interfaces: {
+              "fa0/0": {
+                ip: "192.168.3.1",
+                mask: "255.255.255.0",
+                status: "up",
+              },
+              "se0/0/1": {
+                ip: "192.168.2.2",
+                mask: "255.255.255.0",
+                status: "up",
+              },
+              "se0/0/0": {
+                ip: "192.168.4.1",
+                mask: "255.255.255.0",
+                status: "up",
+              },
+            },
+            routing: {
+              rip: {
+                version: 2,
+                networks: ["192.168.3.0", "192.168.2.0", "192.168.4.0"],
+              },
+              static: [
+                {
+                  destination: "192.168.1.0",
+                  mask: "255.255.255.0",
+                  nextHop: "192.168.2.1",
+                },
+              ],
+            },
+            dhcp: {
+              excluded: ["192.168.3.1", "192.168.3.10"],
+              pools: [
+                {
+                  name: "R2_Pool",
+                  network: "192.168.3.0",
+                  mask: "255.255.255.0",
+                  router: "192.168.3.1",
+                  dns: "8.8.8.8",
+                },
+              ],
+            },
+            acl: [
+              {
+                number: 10,
+                action: "deny",
+                source: "192.168.3.0",
+                wildcard: "0.0.0.255",
+              },
+              { number: 10, action: "permit", source: "any" },
+            ],
+            aclInterfaces: [
+              { interface: "se0/0/1", acl: 10, direction: "out" },
+            ],
+          },
+        },
+        R3: {
+          hostname: "R3",
+          privileged: false,
+          configMode: false,
+          interfaceMode: "",
+          configRegistry: {
+            interfaces: {
+              "fa0/1": {
+                ip: "192.168.5.1",
+                mask: "255.255.255.0",
+                status: "up",
+              },
+              "se0/0/0": {
+                ip: "192.168.6.1",
+                mask: "255.255.255.0",
+                status: "up",
+              },
+              "se0/0/1": {
+                ip: "192.168.4.2",
+                mask: "255.255.255.0",
+                status: "up",
+              },
+            },
+            routing: {
+              rip: {
+                version: 2,
+                networks: ["192.168.4.0", "192.168.5.0", "192.168.6.0"],
+              },
+              static: [
+                {
+                  destination: "192.168.7.0",
+                  mask: "255.255.255.0",
+                  nextHop: "192.168.6.2",
+                },
+              ],
+            },
+            dhcp: {
+              excluded: ["192.168.5.1", "192.168.5.10"],
+              pools: [
+                {
+                  name: "R3_Pool",
+                  network: "192.168.5.0",
+                  mask: "255.255.255.0",
+                  router: "192.168.5.1",
+                  dns: "8.8.8.8",
+                },
+              ],
+            },
+          },
+        },
+        R4: {
+          hostname: "R4",
+          privileged: false,
+          configMode: false,
+          interfaceMode: "",
+          configRegistry: {
+            interfaces: {
+              "fa0/0": {
+                ip: "192.168.7.1",
+                mask: "255.255.255.0",
+                status: "up",
+              },
+              "se0/0/1": {
+                ip: "192.168.6.2",
+                mask: "255.255.255.0",
+                status: "up",
+              },
+              "se0/0/0": {
+                ip: "192.168.8.1",
+                mask: "255.255.255.0",
+                status: "up",
+              },
+            },
+            routing: {
+              rip: {
+                version: 2,
+                networks: ["192.168.8.0", "192.168.7.0", "192.168.6.0"],
+              },
+              static: [
+                {
+                  destination: "192.168.5.0",
+                  mask: "255.255.255.0",
+                  nextHop: "192.168.6.1",
+                },
+              ],
+            },
+            dhcp: {
+              excluded: ["192.168.7.1", "192.168.7.10"],
+              pools: [
+                {
+                  name: "R4_Pool",
+                  network: "192.168.7.0",
+                  mask: "255.255.255.0",
+                  router: "192.168.7.1",
+                  dns: "8.8.8.8",
+                },
+              ],
+            },
+          },
+        },
+        S1: {
+          hostname: "S1",
+          privileged: false,
+          configMode: false,
+          interfaceMode: "",
+          configRegistry: {
+            vlans: [
+              {
+                id: 1,
+                name: "default",
+                interfaces: ["fa0/5", "fa0/6", "fa0/7", "fa0/8"],
+              },
+              { id: 2, name: "compta", interfaces: ["fa0/1", "fa0/2"] },
+              { id: 3, name: "Etudiants", interfaces: ["fa0/3", "fa0/4"] },
+            ],
+            interfaces: {
+              "fa0/1": { mode: "access", vlan: 2 },
+              "fa0/2": { mode: "access", vlan: 2 },
+              "fa0/3": { mode: "access", vlan: 3 },
+              "fa0/4": { mode: "access", vlan: 3 },
+            },
+          },
+        },
+      };
+
+      // Historique des commandes et état actuel
+      let commandHistory = [];
+      let historyIndex = -1;
+      let currentDevice = "R1";
+
+      // Référence aux éléments DOM
+      const terminalContent = document.getElementById("terminal-content");
+      const commandInput = document.getElementById("command-input");
+      const promptElement = document.getElementById("prompt");
+      const deviceSelector = document.getElementById("device-selector");
+
+      // Mettre à jour l'invite de commande en fonction de l'état actuel
+      function updatePrompt() {
+        const device = devices[currentDevice];
+        let prompt = "";
+
+        if (!device.privileged) {
+          prompt = `${device.hostname}>`;
+        } else if (!device.configMode) {
+          prompt = `${device.hostname}#`;
+        } else if (device.interfaceMode) {
+          prompt = `${device.hostname}(config-if)#`;
+        } else {
+          prompt = `${device.hostname}(config)#`;
+        }
+
+        promptElement.textContent = prompt;
+      }
+
+      // Ajouter du texte au terminal
+      function printToTerminal(text, className = "") {
+        const line = document.createElement("div");
+        if (className) line.className = className;
+        line.textContent = text;
+        terminalContent.appendChild(line);
+        terminalContent.scrollTop = terminalContent.scrollHeight;
+      }
+
+      // Ajouter la commande au terminal avec l'invite
+      function printCommandWithPrompt(command) {
+        const line = document.createElement("div");
+        const promptSpan = document.createElement("span");
+        promptSpan.style.color = "#00FF00";
+        promptSpan.textContent = promptElement.textContent + " ";
+
+        const commandSpan = document.createElement("span");
+        commandSpan.textContent = command;
+
+        line.appendChild(promptSpan);
+        line.appendChild(commandSpan);
+        terminalContent.appendChild(line);
+        terminalContent.scrollTop = terminalContent.scrollHeight;
+      }
+
+      // Interpréter et exécuter les commandes
+      function executeCommand(command) {
+        // Ajouter à l'historique
+        if (command.trim()) {
+          commandHistory.push(command);
+          historyIndex = commandHistory.length;
+        }
+
+        const device = devices[currentDevice];
+        const cmd = command.trim().toLowerCase();
+
+        // Commandes disponibles en mode utilisateur
+        if (!device.privileged) {
+          if (cmd === "enable") {
+            device.privileged = true;
+            updatePrompt();
+            return;
+          } else if (cmd === "exit") {
+            printToTerminal("Déconnecté");
+            return;
+          } else if (cmd.startsWith("show ")) {
+            handleShowCommands(cmd.substring(5));
+            return;
+          } else {
+            printToTerminal("% Invalid input detected.", "error");
+            return;
+          }
+        }
+
+        // Commandes disponibles en mode privilégié
+        if (device.privileged && !device.configMode) {
+          if (cmd === "disable") {
+            device.privileged = false;
+            updatePrompt();
+            return;
+          } else if (cmd === "configure terminal" || cmd === "conf t") {
+            device.configMode = true;
+            updatePrompt();
+            return;
+          } else if (cmd.startsWith("show ")) {
+            handleShowCommands(cmd.substring(5));
+            return;
+          } else if (
+            cmd === "copy running-config startup-config" ||
+            cmd === "write" ||
+            cmd === "wr"
+          ) {
+            printToTerminal("Configuration saved.");
+            return;
+          } else if (cmd === "exit") {
+            device.privileged = false;
+            updatePrompt();
+            return;
+          } else {
+            printToTerminal("% Invalid input detected.", "error");
+            return;
+          }
+        }
+
+        // Commandes disponibles en mode configuration
+        if (device.configMode) {
+          if (cmd === "exit") {
+            if (device.interfaceMode) {
+              device.interfaceMode = "";
+              updatePrompt();
+            } else {
+              device.configMode = false;
+              updatePrompt();
+            }
+            return;
+          } else if (cmd === "end") {
+            device.configMode = false;
+            device.interfaceMode = "";
+            updatePrompt();
+            return;
+          } else if (cmd.startsWith("hostname ")) {
+            const newHostname = command.split(" ")[1];
+            device.hostname = newHostname;
+            updatePrompt();
+            return;
+          } else if (cmd.startsWith("interface ")) {
+            const intfName = command.split(" ")[1];
+            device.interfaceMode = intfName;
+            updatePrompt();
+            return;
+          } else if (device.interfaceMode) {
+            // En mode configuration d'interface
+            handleInterfaceCommands(cmd);
+            return;
+          } else if (cmd.startsWith("router rip")) {
+            handleRipConfig(command);
+            return;
+          } else if (cmd.startsWith("ip route ")) {
+            handleStaticRoute(command);
+            return;
+          } else if (cmd.startsWith("access-list ")) {
+            handleAccessList(command);
+            return;
+          } else if (cmd.startsWith("ip dhcp pool ")) {
+            handleDhcpPool(command);
+            return;
+          } else if (cmd.startsWith("ip dhcp excluded-address ")) {
+            handleDhcpExcluded(command);
+            return;
+          } else if (currentDevice === "S1" && cmd.startsWith("vlan ")) {
+            handleVlanConfig(command);
+            return;
+          } else {
+            printToTerminal("% Invalid input detected.", "error");
+            return;
+          }
+        }
+      }
+
+      // Gestion des commandes show
+      function handleShowCommands(cmd) {
+        const device = devices[currentDevice];
+
+        if (cmd === "running-config") {
+          showRunningConfig();
+        } else if (cmd === "ip interface brief" || cmd === "ip int brief") {
+          showIpInterfaceBrief();
+        } else if (cmd === "ip route") {
+          showIpRoute();
+        } else if (cmd.startsWith("interface ")) {
+          const intf = cmd.split(" ")[1];
+          showInterface(intf);
+        } else if (currentDevice === "S1" && cmd === "vlan brief") {
+          showVlanBrief();
+        } else if (cmd.startsWith("access-list")) {
+          showAccessLists();
+        } else {
+          printToTerminal("% Invalid input detected.", "error");
+        }
+      }
+
+      // Afficher la configuration en cours
+      function showRunningConfig() {
+        const device = devices[currentDevice];
+
+        printToTerminal("Current configuration:");
+        printToTerminal("!");
+        printToTerminal(`hostname ${device.hostname}`);
+        printToTerminal("!");
+
+        // Afficher les interfaces
+        Object.entries(device.configRegistry.interfaces).forEach(
+          ([name, config]) => {
+            printToTerminal(`interface ${name}`);
+            if (config.ip) {
+              printToTerminal(` ip address ${config.ip} ${config.mask}`);
+            }
+            if (config.status === "up") {
+              printToTerminal(" no shutdown");
+            } else {
+              printToTerminal(" shutdown");
+            }
+
+            // Configuration VLAN pour les switches
+            if (currentDevice === "S1") {
+              if (config.mode) {
+                printToTerminal(` switchport mode ${config.mode}`);
+              }
+              if (config.vlan) {
+                printToTerminal(` switchport access vlan ${config.vlan}`);
+              }
+            }
+
+            printToTerminal("!");
+          }
+        );
+
+        // Afficher RIP
+        if (device.configRegistry.routing?.rip) {
+          const rip = device.configRegistry.routing.rip;
+          printToTerminal("router rip");
+          if (rip.version) {
+            printToTerminal(` version ${rip.version}`);
+          }
+          rip.networks.forEach((network) => {
+            printToTerminal(` network ${network}`);
+          });
+          printToTerminal("!");
+        }
+
+        // Afficher routes statiques
+        if (device.configRegistry.routing?.static) {
+          device.configRegistry.routing.static.forEach((route) => {
+            printToTerminal(
+              `ip route ${route.destination} ${route.mask} ${route.nextHop}`
+            );
+          });
+          printToTerminal("!");
+        }
+
+        // Afficher DHCP
+        if (device.configRegistry.dhcp) {
+          if (device.configRegistry.dhcp.excluded) {
+            device.configRegistry.dhcp.excluded.forEach((ip, i, arr) => {
+              if (i % 2 === 0 && i + 1 < arr.length) {
+                printToTerminal(`ip dhcp excluded-address ${ip} ${arr[i + 1]}`);
+              }
+            });
+          }
+
+          if (device.configRegistry.dhcp.pools) {
+            device.configRegistry.dhcp.pools.forEach((pool) => {
+              printToTerminal(`ip dhcp pool ${pool.name}`);
+              printToTerminal(` network ${pool.network} ${pool.mask}`);
+              printToTerminal(` default-router ${pool.router}`);
+              printToTerminal(` dns-server ${pool.dns}`);
+              printToTerminal("!");
+            });
+          }
+        }
+
+        // Afficher ACLs
+        if (device.configRegistry.acl) {
+          device.configRegistry.acl.forEach((acl) => {
+            if (acl.source === "any") {
+              printToTerminal(`access-list ${acl.number} ${acl.action} any`);
+            } else {
+              printToTerminal(
+                `access-list ${acl.number} ${acl.action} ${acl.source} ${acl.wildcard}`
+              );
+            }
+          });
+
+          if (device.configRegistry.aclInterfaces) {
+            device.configRegistry.aclInterfaces.forEach((aclInt) => {
+              printToTerminal(`interface ${aclInt.interface}`);
+              printToTerminal(
+                ` ip access-group ${aclInt.acl} ${aclInt.direction}`
+              );
+              printToTerminal("!");
+            });
+          }
+        }
+
+        // Afficher VLANs pour les switches
+        if (currentDevice === "S1" && device.configRegistry.vlans) {
+          device.configRegistry.vlans.forEach((vlan) => {
+            if (vlan.id !== 1) {
+              // Ne pas afficher VLAN 1 par défaut
+              printToTerminal(`vlan ${vlan.id}`);
+              printToTerminal(` name ${vlan.name}`);
+              printToTerminal("!");
+            }
+          });
+        }
+
+        printToTerminal("end");
+      }
+
+      // Afficher l'état des interfaces
+      function showIpInterfaceBrief() {
+        const device = devices[currentDevice];
+
+        printToTerminal("Interface         IP-Address      OK? Method Status");
+        printToTerminal(
+          "----------------------------------------------------------"
+        );
+
+        Object.entries(device.configRegistry.interfaces).forEach(
+          ([name, config]) => {
+            const ipAddress = config.ip || "unassigned";
+            const status = config.status || "down";
+            const padding1 = " ".repeat(16 - name.length);
+            const padding2 = " ".repeat(15 - ipAddress.length);
+
+            printToTerminal(
+              `${name}${padding1}${ipAddress}${padding2}YES manual ${status}`
+            );
+          }
+        );
+      }
+
+      // Afficher la table de routage
+      function showIpRoute() {
+        const device = devices[currentDevice];
+
+        printToTerminal(
+          "Codes: C - connected, S - static, R - RIP, O - OSPF, B - BGP"
+        );
+        printToTerminal("Gateway of last resort is not set");
+        printToTerminal("");
+
+        // Routes connectées
+        Object.entries(device.configRegistry.interfaces).forEach(
+          ([name, config]) => {
+            if (config.ip && config.status === "up") {
+              const network = config.ip.split(".").slice(0, 3).join(".") + ".0";
+              printToTerminal(`C    ${network} is directly connected, ${name}`);
+            }
+          }
+        );
+
+        // Routes statiques
+        if (device.configRegistry.routing?.static) {
+          device.configRegistry.routing.static.forEach((route) => {
+            printToTerminal(
+              `S    ${route.destination} [1/0] via ${route.nextHop}`
+            );
+          });
+        }
+
+        // Routes RIP (simplifiées)
+        if (device.configRegistry.routing?.rip) {
+          const ripNetworks = device.configRegistry.routing.rip.networks;
+          // Ajouter quelques routes RIP simulées
+          const deviceNumber = parseInt(currentDevice.slice(1));
+
+          [1, 2, 3, 4].forEach((i) => {
+            if (i !== deviceNumber) {
+              // Ne pas ajouter ses propres réseaux
+              const network = `192.168.${i * 2 - 1}.0`;
+              if (!ripNetworks.includes(network)) {
+                printToTerminal(
+                  `R    ${network} [120/1] via 192.168.${
+                    Math.min(deviceNumber, i) * 2
+                  }.${i > deviceNumber ? 2 : 1}, 00:00:15`
+                );
+              }
+            }
+          });
+        }
+      }
+
+      // Afficher les détails d'une interface
+      function showInterface(intf) {
+        const device = devices[currentDevice];
+
+        if (!device.configRegistry.interfaces[intf]) {
+          printToTerminal(`% Interface ${intf} does not exist`, "error");
+          return;
+        }
+
+        const config = device.configRegistry.interfaces[intf];
+        printToTerminal(
+          `${intf} is ${
+            config.status === "up" ? "up" : "administratively down"
+          }`
+        );
+        printToTerminal(
+          "  Hardware is FastEthernet, address is 0000.0000.0001"
+        );
+
+        if (config.ip) {
+          printToTerminal(
+            `  Internet address is ${config.ip}/${getSubnetMaskCIDR(
+              config.mask
+            )}`
+          );
+        } else {
+          printToTerminal("  Internet address is not assigned");
+        }
+
+        if (currentDevice === "S1" && config.vlan) {
+          printToTerminal(`  Switchport access vlan ${config.vlan}`);
+          printToTerminal(`  Switchport mode ${config.mode || "access"}`);
+        }
+
+        printToTerminal("  MTU 1500 bytes, BW 100000 Kbit, DLY 1000 usec");
+      }
+
+      // Afficher les VLANs sur un switch
+      function showVlanBrief() {
+        if (currentDevice !== "S1") {
+          printToTerminal("Command only available on switches", "error");
+          return;
+        }
+
+        const device = devices[currentDevice];
+
+        printToTerminal(
+          "VLAN Name                             Status    Ports"
+        );
+        printToTerminal(
+          "---- -------------------------------- --------- -----------------------------"
+        );
+
+        device.configRegistry.vlans.forEach((vlan) => {
+          const vlanId = vlan.id.toString().padEnd(4);
+          const vlanName = vlan.name.padEnd(32);
+          const interfaces = vlan.interfaces ? vlan.interfaces.join(", ") : "";
+
+          printToTerminal(`${vlanId} ${vlanName} active    ${interfaces}`);
+        });
+      }
+
+      // Afficher les ACLs
+      function showAccessLists() {
+        const device = devices[currentDevice];
+
+        if (
+          !device.configRegistry.acl ||
+          device.configRegistry.acl.length === 0
+        ) {
+          printToTerminal("No access list configured");
+          return;
+        }
+
+        // Grouper par numéro d'ACL
+        const aclGroups = {};
+        device.configRegistry.acl.forEach((acl) => {
+          if (!aclGroups[acl.number]) {
+            aclGroups[acl.number] = [];
+          }
+          aclGroups[acl.number].push(acl);
+        });
+
+        // Afficher chaque ACL
+        Object.entries(aclGroups).forEach(([number, acls]) => {
+          printToTerminal(`Standard IP access list ${number}`);
+          acls.forEach((acl, index) => {
+            if (acl.source === "any") {
+              printToTerminal(`    ${index + 10} ${acl.action} any`);
+            } else {
+              printToTerminal(
+                `    ${index + 10} ${acl.action} ${acl.source} ${acl.wildcard}`
+              );
+            }
+          });
+        });
+
+        // Afficher les interfaces où les ACLs sont appliquées
+        if (device.configRegistry.aclInterfaces) {
+          printToTerminal("\nInterface applications:");
+          device.configRegistry.aclInterfaces.forEach((aclInt) => {
+            printToTerminal(
+              `ACL ${aclInt.acl} applied to ${aclInt.interface} in ${aclInt.direction} direction`
+            );
+          });
+        }
+      }
+
+      // Gestion des commandes d'interface
+      function handleInterfaceCommands(cmd) {
+        const device = devices[currentDevice];
+        const intf = device.interfaceMode;
+
+        if (!device.configRegistry.interfaces[intf]) {
+          device.configRegistry.interfaces[intf] = {};
+        }
+
+        if (cmd.startsWith("ip address ")) {
+          const parts = cmd.split(" ").filter(Boolean);
+          if (parts.length >= 4) {
+            device.configRegistry.interfaces[intf].ip = parts[2];
+            device.configRegistry.interfaces[intf].mask = parts[3];
+            printToTerminal(`IP address configured on ${intf}`);
+          } else {
+            printToTerminal("Incomplete command", "error");
+          }
+        } else if (cmd === "no shutdown") {
+          device.configRegistry.interfaces[intf].status = "up";
+          printToTerminal(`Interface ${intf} enabled`);
+        } else if (cmd === "shutdown") {
+          device.configRegistry.interfaces[intf].status = "down";
+          printToTerminal(`Interface ${intf} disabled`);
+        } else if (
+          currentDevice === "S1" &&
+          cmd.startsWith("switchport mode ")
+        ) {
+          const mode = cmd.split(" ")[2];
+          device.configRegistry.interfaces[intf].mode = mode;
+          printToTerminal(`Switchport mode set to ${mode}`);
+        } else if (
+          currentDevice === "S1" &&
+          cmd.startsWith("switchport access vlan ")
+        ) {
+          const vlanId = parseInt(cmd.split(" ")[3]);
+          device.configRegistry.interfaces[intf].vlan = vlanId;
+
+          // Mettre à jour la liste des interfaces du VLAN
+          let vlanFound = false;
+          device.configRegistry.vlans.forEach((vlan) => {
+            if (vlan.id === vlanId) {
+              if (!vlan.interfaces) vlan.interfaces = [];
+              if (!vlan.interfaces.includes(intf)) {
+                vlan.interfaces.push(intf);
+              }
+              vlanFound = true;
+            }
+          });
+
+          if (!vlanFound) {
+            printToTerminal(`VLAN ${vlanId} does not exist`, "error");
+          } else {
+            printToTerminal(`Interface ${intf} assigned to VLAN ${vlanId}`);
+          }
+        } else if (cmd.startsWith("ip access-group ")) {
+          const parts = cmd.split(" ").filter(Boolean);
+          if (parts.length >= 4) {
+            const aclNumber = parseInt(parts[2]);
+            const direction = parts[3];
+
+            // Vérifier si l'ACL existe
+            const aclExists =
+              device.configRegistry.acl &&
+              device.configRegistry.acl.some((acl) => acl.number === aclNumber);
+
+            if (!aclExists) {
+              printToTerminal(`Access list ${aclNumber} not found`, "error");
+              return;
+            }
+
+            if (!device.configRegistry.aclInterfaces) {
+              device.configRegistry.aclInterfaces = [];
+            }
+
+            // Mettre à jour ou ajouter l'application de l'ACL
+            let found = false;
+            device.configRegistry.aclInterfaces.forEach((aclInt) => {
+              if (aclInt.interface === intf && aclInt.direction === direction) {
+                aclInt.acl = aclNumber;
+                found = true;
+              }
+            });
+
+            if (!found) {
+              device.configRegistry.aclInterfaces.push({
+                interface: intf,
+                acl: aclNumber,
+                direction: direction,
+              });
+            }
+
+            printToTerminal(
+              `Access group ${aclNumber} applied to ${intf} in ${direction} direction`
+            );
+          } else {
+            printToTerminal("Incomplete command", "error");
+          }
+        } else if (cmd.startsWith("ip helper-address ")) {
+          const helperIp = cmd.split(" ")[2];
+          if (helperIp && isValidIP(helperIp)) {
+            if (!device.configRegistry.interfaces[intf].helpers) {
+              device.configRegistry.interfaces[intf].helpers = [];
+            }
+            device.configRegistry.interfaces[intf].helpers.push(helperIp);
+            printToTerminal(
+              `DHCP helper address ${helperIp} configured on ${intf}`
+            );
+          } else {
+            printToTerminal("Invalid IP address", "error");
+          }
+        } else {
+          printToTerminal("% Invalid input detected.", "error");
+        }
+      }
+
+      // Gestion des commandes RIP
+      function handleRipConfig(command) {
+        const device = devices[currentDevice];
+        const lines = command.split("\n");
+
+        // Initialiser RIP si nécessaire
+        if (!device.configRegistry.routing) device.configRegistry.routing = {};
+        if (!device.configRegistry.routing.rip) {
+          device.configRegistry.routing.rip = { networks: [] };
+        }
+
+        // Traiter chaque ligne
+        let inRipConfig = false;
+
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i].trim().toLowerCase();
+
+          if (line === "router rip") {
+            inRipConfig = true;
+            printToTerminal("Configuring RIP routing protocol");
+          } else if (inRipConfig && line === "exit") {
+            inRipConfig = false;
+          } else if (inRipConfig && line.startsWith("version ")) {
+            const version = parseInt(line.split(" ")[1]);
+            device.configRegistry.routing.rip.version = version;
+            printToTerminal(`RIP version set to ${version}`);
+          } else if (inRipConfig && line.startsWith("network ")) {
+            const network = line.split(" ")[1];
+            if (!device.configRegistry.routing.rip.networks.includes(network)) {
+              device.configRegistry.routing.rip.networks.push(network);
+              printToTerminal(`Network ${network} added to RIP`);
+            }
+          }
+        }
+      }
+
+      // Gestion des routes statiques
+      function handleStaticRoute(command) {
+        const device = devices[currentDevice];
+        const parts = command.split(" ").filter(Boolean);
+
+        if (parts.length < 5) {
+          printToTerminal("Incomplete route command", "error");
+          return;
+        }
+
+        const destination = parts[2];
+        const mask = parts[3];
+        const nextHop = parts[4];
+
+        if (
+          !isValidIP(destination) ||
+          !isValidIP(mask) ||
+          !isValidIP(nextHop)
+        ) {
+          printToTerminal("Invalid IP address format", "error");
+          return;
+        }
+
+        // Initialiser la section routage si nécessaire
+        if (!device.configRegistry.routing) device.configRegistry.routing = {};
+        if (!device.configRegistry.routing.static)
+          device.configRegistry.routing.static = [];
+
+        // Ajouter la route
+        device.configRegistry.routing.static.push({
+          destination,
+          mask,
+          nextHop,
+        });
+
+        printToTerminal(
+          `Static route to ${destination} via ${nextHop} configured`
+        );
+      }
+
+      // Gestion des ACLs
+      function handleAccessList(command) {
+        const device = devices[currentDevice];
+        const parts = command.split(" ").filter(Boolean);
+
+        if (parts.length < 4) {
+          printToTerminal("Incomplete access-list command", "error");
+          return;
+        }
+
+        const number = parseInt(parts[1]);
+        const action = parts[2];
+        const source = parts[3];
+
+        if (isNaN(number) || (action !== "permit" && action !== "deny")) {
+          printToTerminal("Invalid access-list parameters", "error");
+          return;
+        }
+
+        // Initialiser les ACLs si nécessaire
+        if (!device.configRegistry.acl) device.configRegistry.acl = [];
+
+        // Ajouter l'ACL
+        if (source === "any") {
+          device.configRegistry.acl.push({
+            number,
+            action,
+            source,
+          });
+          printToTerminal(
+            `Access-list ${number} configured to ${action} ${source}`
+          );
+        } else {
+          if (parts.length < 5) {
+            printToTerminal("Wildcard mask missing", "error");
+            return;
+          }
+          const wildcard = parts[4];
+
+          if (!isValidIP(source) || !isValidIP(wildcard)) {
+            printToTerminal("Invalid IP address format", "error");
+            return;
+          }
+
+          device.configRegistry.acl.push({
+            number,
+            action,
+            source,
+            wildcard,
+          });
+          printToTerminal(
+            `Access-list ${number} configured to ${action} ${source} ${wildcard}`
+          );
+        }
+      }
+
+      // Gestion des pools DHCP
+      function handleDhcpPool(command) {
+        const device = devices[currentDevice];
+        const lines = command.split("\n");
+
+        // Initialiser DHCP si nécessaire
+        if (!device.configRegistry.dhcp) device.configRegistry.dhcp = {};
+        if (!device.configRegistry.dhcp.pools)
+          device.configRegistry.dhcp.pools = [];
+
+        // Traiter chaque ligne
+        let inDhcpConfig = false;
+        let currentPool = null;
+
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i].trim();
+
+          if (line.startsWith("ip dhcp pool ")) {
+            inDhcpConfig = true;
+            const poolName = line.split(" ")[3];
+            currentPool = { name: poolName };
+            device.configRegistry.dhcp.pools.push(currentPool);
+            printToTerminal(`Configuring DHCP pool ${poolName}`);
+          } else if (inDhcpConfig && line === "exit") {
+            inDhcpConfig = false;
+            currentPool = null;
+          } else if (
+            inDhcpConfig &&
+            currentPool &&
+            line.startsWith("network ")
+          ) {
+            const parts = line.split(" ").filter(Boolean);
+            if (parts.length >= 3) {
+              currentPool.network = parts[1];
+              currentPool.mask = parts[2];
+              printToTerminal(
+                `Network ${parts[1]} ${parts[2]} configured for pool ${currentPool.name}`
+              );
+            }
+          } else if (
+            inDhcpConfig &&
+            currentPool &&
+            line.startsWith("default-router ")
+          ) {
+            const router = line.split(" ")[1];
+            currentPool.router = router;
+            printToTerminal(
+              `Default router ${router} configured for pool ${currentPool.name}`
+            );
+          } else if (
+            inDhcpConfig &&
+            currentPool &&
+            line.startsWith("dns-server ")
+          ) {
+            const dns = line.split(" ")[1];
+            currentPool.dns = dns;
+            printToTerminal(
+              `DNS server ${dns} configured for pool ${currentPool.name}`
+            );
+          }
+        }
+      }
+
+      // Gestion des adresses exclues DHCP
+      function handleDhcpExcluded(command) {
+        const device = devices[currentDevice];
+        const parts = command.split(" ").filter(Boolean);
+
+        if (parts.length < 3) {
+          printToTerminal("Incomplete dhcp excluded-address command", "error");
+          return;
+        }
+
+        const startIp = parts[3];
+        const endIp = parts.length > 4 ? parts[4] : startIp;
+
+        if (!isValidIP(startIp) || !isValidIP(endIp)) {
+          printToTerminal("Invalid IP address format", "error");
+          return;
+        }
+
+        // Initialiser DHCP si nécessaire
+        if (!device.configRegistry.dhcp) device.configRegistry.dhcp = {};
+        if (!device.configRegistry.dhcp.excluded)
+          device.configRegistry.dhcp.excluded = [];
+
+        // Ajouter les adresses exclues
+        device.configRegistry.dhcp.excluded.push(startIp);
+        if (startIp !== endIp) {
+          device.configRegistry.dhcp.excluded.push(endIp);
+          printToTerminal(
+            `DHCP addresses from ${startIp} to ${endIp} excluded`
+          );
+        } else {
+          printToTerminal(`DHCP address ${startIp} excluded`);
+        }
+      }
+
+      // Gestion des VLANs
+      function handleVlanConfig(command) {
+        if (currentDevice !== "S1") {
+          printToTerminal("VLAN commands only available on switches", "error");
+          return;
+        }
+
+        const device = devices[currentDevice];
+        const lines = command.split("\n");
+
+        // Initialiser VLANs si nécessaire
+        if (!device.configRegistry.vlans) device.configRegistry.vlans = [];
+
+        // Traiter chaque ligne
+        let inVlanConfig = false;
+        let currentVlan = null;
+
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i].trim();
+
+          if (line.startsWith("vlan ")) {
+            inVlanConfig = true;
+            const vlanId = parseInt(line.split(" ")[1]);
+
+            // Vérifier si le VLAN existe déjà
+            let vlanExists = false;
+            device.configRegistry.vlans.forEach((vlan) => {
+              if (vlan.id === vlanId) {
+                currentVlan = vlan;
+                vlanExists = true;
+              }
+            });
+
+            if (!vlanExists) {
+              currentVlan = { id: vlanId, interfaces: [] };
+              device.configRegistry.vlans.push(currentVlan);
+            }
+
+            printToTerminal(`Configuring VLAN ${vlanId}`);
+          } else if (inVlanConfig && line === "exit") {
+            inVlanConfig = false;
+            currentVlan = null;
+          } else if (inVlanConfig && currentVlan && line.startsWith("name ")) {
+            const vlanName = line.split(" ")[1];
+            currentVlan.name = vlanName;
+            printToTerminal(`VLAN ${currentVlan.id} named ${vlanName}`);
+          }
+        }
+      }
+
+      // Fonctions utilitaires
+      function isValidIP(ip) {
+        // Validation basique d'IP
+        const pattern = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+        if (!pattern.test(ip)) return false;
+
+        const parts = ip.split(".");
+        for (let i = 0; i < parts.length; i++) {
+          const part = parseInt(parts[i]);
+          if (part < 0 || part > 255) return false;
+        }
+
+        return true;
+      }
+
+      function getSubnetMaskCIDR(mask) {
+        // Convertir un masque en notation CIDR
+        const parts = mask.split(".");
+        let count = 0;
+
+        for (let i = 0; i < parts.length; i++) {
+          const part = parseInt(parts[i]);
+          count += (part >>> 0).toString(2).split("1").length - 1;
+        }
+
+        return count;
+      }
+
+      // Gestionnaires d'événements
+      commandInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          const command = commandInput.value;
+          printCommandWithPrompt(command);
+          executeCommand(command);
+          commandInput.value = "";
+          e.preventDefault();
+        } else if (e.key === "ArrowUp") {
+          // Naviguer dans l'historique des commandes
+          if (historyIndex > 0) {
+            historyIndex--;
+            commandInput.value = commandHistory[historyIndex];
+          }
+          e.preventDefault();
+        } else if (e.key === "ArrowDown") {
+          // Naviguer dans l'historique des commandes
+          if (historyIndex < commandHistory.length - 1) {
+            historyIndex++;
+            commandInput.value = commandHistory[historyIndex];
+          } else if (historyIndex === commandHistory.length - 1) {
+            historyIndex = commandHistory.length;
+            commandInput.value = "";
+          }
+          e.preventDefault();
+        } else if (e.key === "Tab") {
+          // Auto-complétion basique
+          e.preventDefault();
+
+          const input = commandInput.value;
+          const device = devices[currentDevice];
+
+          if (input === "sh") {
+            commandInput.value = "show ";
+          } else if (input === "en") {
+            commandInput.value = "enable";
+          } else if (input === "conf") {
+            commandInput.value = "configure terminal";
+          } else if (input === "int") {
+            commandInput.value = "interface ";
+          } else if (input.startsWith("interface")) {
+            // Compléter avec une interface
+            const interfaces = Object.keys(device.configRegistry.interfaces);
+            for (const intf of interfaces) {
+              if (intf.startsWith(input.substring(10))) {
+                commandInput.value = "interface " + intf;
+                break;
+              }
+            }
+          }
+        }
+      });
+
+      deviceSelector.addEventListener("change", function () {
+        currentDevice = this.value;
+        updatePrompt();
+        printToTerminal(`Switched to device ${currentDevice}`);
+      });
+
+      document
+        .getElementById("reset-config")
+        .addEventListener("click", function () {
+          if (confirm(`Reset configuration for ${currentDevice}?`)) {
+            // Réinitialiser la configuration
+            const device = devices[currentDevice];
+            device.privileged = false;
+            device.configMode = false;
+            device.interfaceMode = "";
+
+            // Redémarrer le terminal
+            terminalContent.innerHTML = "";
+            updatePrompt();
+            printToTerminal(
+              `Configuration of ${currentDevice} has been reset to default`
+            );
+          }
+        });
+
+      document
+        .getElementById("save-config")
+        .addEventListener("click", function () {
+          const device = devices[currentDevice];
+          printToTerminal(`Configuration of ${currentDevice} has been saved`);
+
+          // Simuler la sauvegarde en affichant un récapitulatif
+          showRunningConfig();
+        });
+
+      // Initialiser le terminal
+      updatePrompt();
+      printToTerminal("Cisco IOS Terminal Simulator");
+      printToTerminal("Type 'help' for available commands");
+      printToTerminal("Current device: " + currentDevice);
+      printToTerminal("--------------------------------------------------");
+      printToTerminal("");
+    </script>
+  </body>
+</html>
