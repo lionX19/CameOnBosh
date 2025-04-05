@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP LVM Linux - Guide Pratique</title>
+    <style>
+        :root {
+            --primary-color: #5D5CDE;
+            --secondary-color: #4949B3;
+            --accent-color: #FF5722;
+            --bg-color: #FFFFFF;
+            --text-color: #333333;
+            --section-bg: #F5F5F5;
+            --code-bg: #F0F0F0;
+            --border-color: #DDDDDD;
+            --success-color: #4CAF50;
+            --warning-color: #FFC107;
+            --terminal-bg: #2E2E2E;
+            --terminal-text: #F0F0F0;
+        }
+
+        .dark {
+            --primary-color: #7775FF;
+            --secondary-color: #5D5CDE;
+            --accent-color: #FF7043;
+            --bg-color: #181818;
+            --text-color: #E0E0E0;
+            --section-bg: #252525;
+            --code-bg: #2E2E2E;
+            --border-color: #444444;
+            --success-color: #66BB6A;
+            --warning-color: #FFCA28;
+            --terminal-bg: #1A1A1A;
+            --terminal-text: #F0F0F0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin: 1.5rem 0 1rem;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            margin: 1.2rem 0 0.8rem;
+            color: var(--secondary-color);
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #theme-toggle {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #theme-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        nav {
+            background-color: var(--section-bg);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        nav li {
+            margin-right: 0.5rem;
+        }
+
+        nav a {
+            color: var(--primary-color);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            display: inline-block;
+        }
+
+        nav a:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        section {
+            background-color: var(--section-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .theory-item {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .theory-item:last-child {
+            border-bottom: none;
+        }
+
+        .command-block {
+            background-color: var(--terminal-bg);
+            color: var(--terminal-text);
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .command {
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            position: absolute;
+            right: 0.5rem;
+            top: 0.5rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .copy-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .step {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .step:last-child {
+            border-bottom: none;
+        }
+
+        .note {
+            background-color: var(--warning-color);
+            color: #333;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+
+        .lvm-visualization {
+            width: 100%;
+            height: 300px;
+            margin: 1rem 0;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .disk {
+            background-color: #dddddd;
+            height: 40px;
+            margin-bottom: 10px;
+            position: relative;
+            border-radius: 4px;
+        }
+
+        .partition {
+            height: 100%;
+            position: absolute;
+            top: 0;
+            border-right: 1px dashed #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        .pv {
+            background-color: #AED6F1;
+        }
+
+        .vg {
+            background-color: #D4E6F1;
+            margin-top: 20px;
+            height: 50px;
+        }
+
+        .lv {
+            background-color: #A9CCE3;
+            margin-top: 20px;
+            height: 40px;
+        }
+
+        .legend {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-right: 1rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 0.5rem;
+            border-radius: 4px;
+        }
+
+        .controls {
+            margin: 1rem 0;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--code-bg);
+            color: var(--text-color);
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            margin: 1rem 0;
+            font-size: 16px;
+        }
+
+        #report-template {
+            white-space: pre-wrap;
+        }
+
+        @media (max-width: 768px) {
+            nav ul {
+                flex-direction: column;
+            }
+
+            .lvm-visualization {
+                height: 400px;
+            }
+        }
+
+        .tab-container {
+            margin-top: 1rem;
+        }
+
+        .tab-buttons {
+            display: flex;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab-button {
+            padding: 0.5rem 1rem;
+            background-color: transparent;
+            color: var(--text-color);
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .tab-button.active {
+            border-bottom: 3px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .terminal {
+            width: 100%;
+            background-color: #000;
+            color: #fff;
+            font-family: monospace;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .terminal pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        #loading {
+            display: none;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .loader {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #report-download {
+            display: block;
+            width: 100%;
+            margin-top: 1rem;
+            background-color: var(--success-color);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav-container container">
+            <h1>TP LVM Linux - Guide Pratique</h1>
+            <button id="theme-toggle">Mode sombre</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav>
+            <ul>
+                <li><a href="#introduction">Introduction</a></li>
+                <li><a href="#theory">Partie 1: Théorie</a></li>
+                <li><a href="#practice">Partie 2: Pratique</a></li>
+                <li><a href="#analysis">Partie 3: Analyse</a></li>
+                <li><a href="#report">Générateur de rapport</a></li>
+            </ul>
+        </nav>
+
+        <section id="introduction">
+            <h2>Introduction</h2>
+            <p>Ce guide interactif vous accompagne dans la découverte et la manipulation de LVM (Logical Volume Manager) sous Linux. Vous y trouverez les explications théoriques, les commandes pratiques et des outils pour générer votre rapport.</p>
+            <p>L'objectif est de vous permettre de comprendre les principes fondamentaux de la gestion de stockage avec LVM et de mettre en pratique ces concepts à travers des manipulations concrètes sur une machine virtuelle.</p>
+        </section>
+
+        <section id="theory">
+            <h2>Partie 1: Compréhension théorique</h2>
+           
+            <div class="theory-item">
+                <h3>Volume Physique (PV - Physical Volume)</h3>
+                <p>Un volume physique est une partition ou un disque entier qui a été initialisé pour être utilisé avec LVM. C'est la base physique sur laquelle repose LVM.</p>
+                <p>Le volume physique est divisé en extents physiques (PE) de taille identique, qui sont les unités de base de l'allocation d'espace dans LVM.</p>
+                <div class="command-block">
+                    <div class="command"># Commande pour créer un volume physique
+pvcreate /dev/sdXY
+
+# Commande pour afficher les volumes physiques
+pvdisplay
+pvs</div>
+                    <button class="copy-btn">Copier</button>
+                </div>
+            </div>
+
+            <div class="theory-item">
+                <h3>Groupe de Volumes (VG - Volume Group)</h3>
+                <p>Un groupe de volumes est une collection de volumes physiques (PV) qui sont combinés pour former un pool de stockage. C'est l'équivalent d'un disque virtuel composé de plusieurs disques physiques.</p>
+                <p>Les groupes de volumes permettent de regrouper l'espace de stockage disponible sur plusieurs disques et de le gérer comme une seule unité logique.</p>
+                <div class="command-block">
+                    <div class="command"># Commande pour créer un groupe de volumes
+vgcreate nom_du_groupe /dev/sdXY [/dev/sdXZ ...]
+
+# Commande pour afficher les groupes de volumes
+vgdisplay
+vgs</div>
+                    <button class="copy-btn">Copier</button>
+                </div>
+            </div>
+
+            <div class="theory-item">
+                <h3>Volume Logique (LV - Logical Volume)</h3>
+                <p>Un volume logique est créé à partir de l'espace disponible dans un groupe de volumes. C'est l'équivalent d'une partition, mais avec beaucoup plus de flexibilité.</p>
+                <p>Les volumes logiques peuvent être redimensionnés, clonés, instantanés et déplacés sans interruption de service dans de nombreux cas.</p>
+                <div class="command-block">
+                    <div class="command"># Commande pour créer un volume logique
+lvcreate -L taille -n nom_du_volume nom_du_groupe
+
+# Commande pour afficher les volumes logiques
+lvdisplay
+lvs</div>
+                    <button class="copy-btn">Copier</button>
+                </div>
+            </div>
+
+            <div class="theory-item">
+                <h3>Interaction entre PV, VG et LV</h3>
+                <p>Le fonctionnement de LVM suit une hiérarchie à trois niveaux :</p>
+                <ol>
+                    <li>Les volumes physiques (PV) fournissent l'espace de stockage brut.</li>
+                    <li>Les groupes de volumes (VG) regroupent cet espace en pools.</li>
+                    <li>Les volumes logiques (LV) sont créés à partir de ces pools et accueillent les systèmes de fichiers.</li>
+                </ol>
+                <p>Cette structure permet d'abstraire le stockage physique et offre une grande flexibilité dans la gestion de l'espace disque.</p>
+            </div>
+
+            <div class="theory-item">
+                <h3>Flexibilité de LVM vs partitionnement traditionnel</h3>
+                <p>LVM est plus flexible que le partitionnement traditionnel pour plusieurs raisons :</p>
+                <ul>
+                    <li><strong>Redimensionnement dynamique</strong> : Les volumes logiques peuvent être agrandis ou réduits sans avoir à redémarrer le système, contrairement aux partitions traditionnelles.</li>
+                    <li><strong>Gestion de l'espace non contigü</strong> : LVM peut utiliser de l'espace non contigü sur différents disques physiques.</li>
+                    <li><strong>Ajout de stockage à chaud</strong> : Vous pouvez ajouter de nouveaux disques à un groupe de volumes existant sans perturber les données.</li>
+                    <li><strong>Instantanés</strong> : LVM permet de créer des instantanés (snapshots) des volumes logiques pour les sauvegardes.</li>
+                </ul>
+            </div>
+
+            <div class="theory-item">
+                <h3>Conséquence d'une extension de volume sans ajustement du système de fichiers</h3>
+                <p>Si vous étendez un volume logique sans ajuster le système de fichiers :</p>
+                <ul>
+                    <li>L'espace supplémentaire alloué au volume logique ne sera pas reconnu par le système de fichiers.</li>
+                    <li>Le système de fichiers continuera à utiliser uniquement l'espace qu'il connaissait avant l'extension.</li>
+                    <li>Les outils de reporting (comme <code>df</code>) continueront à afficher la taille originale du système de fichiers.</li>
+                    <li>L'espace supplémentaire reste inutilisable jusqu'à ce que le système de fichiers soit redimensionné pour occuper tout l'espace disponible.</li>
+                </ul>
+                <p>Pour utiliser l'espace ajouté, il faut redimensionner le système de fichiers avec des commandes comme <code>resize2fs</code> (pour ext2/3/4) ou <code>xfs_growfs</code> (pour XFS).</p>
+            </div>
+
+            <div class="lvm-visualization">
+                <h3>Visualisation de l'architecture LVM</h3>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #dddddd;"></div>
+                        <span>Disque physique</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #AED6F1;"></div>
+                        <span>Volume Physique (PV)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #D4E6F1;"></div>
+                        <span>Groupe de Volumes (VG)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #A9CCE3;"></div>
+                        <span>Volume Logique (LV)</span>
+                    </div>
+                </div>
+
+                <div id="lvm-diagram">
+                    <div class="disk">
+                        <div class="partition pv" style="left: 0; width: 33.3%;">5Go</div>
+                        <div class="partition pv" style="left: 33.3%; width: 26.7%;">4Go</div>
+                        <div class="partition pv" style="left: 60%; width: 40%;">6Go</div>
+                    </div>
+                    <div class="vg" id="vg-display" style="width: 100%;">
+                        Groupe de Volumes (etudiant_vg): 15Go
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <div class="lv" id="lv-data" style="width: 33.3%;">lv_data: 3Go (ext4)</div>
+                        <div class="lv" id="lv-backup" style="width: 44.4%;">lv_backup: 5Go (XFS)</div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button id="step1">Étape 1: Disque initial</button>
+                    <button id="step2">Étape 2: Partitionnement</button>
+                    <button id="step3">Étape 3: Création PV</button>
+                    <button id="step4">Étape 4: Création VG</button>
+                    <button id="step5">Étape 5: Extension VG</button>
+                    <button id="step6">Étape 6: Création LV</button>
+                    <button id="step7">Étape 7: Extension LV</button>
+                    <button id="step8">Étape 8: Suppression LV</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="practice">
+            <h2>Partie 2: Manipulations pratiques</h2>
+
+            <div class="tab-container">
+                <div class="tab-buttons">
+                    <button class="tab-button active" data-tab="tab-1">1. Préparation</button>
+                    <button class="tab-button" data-tab="tab-2">2. Partitionnement</button>
+                    <button class="tab-button" data-tab="tab-3">3. Configuration LVM</button>
+                    <button class="tab-button" data-tab="tab-4">4. Volumes logiques</button>
+                    <button class="tab-button" data-tab="tab-5">5. Extension</button>
+                    <button class="tab-button" data-tab="tab-6">6. Nettoyage</button>
+                </div>
+
+                <div class="tab-content active" id="tab-1">
+                    <h3>1. Préparation</h3>
+                    <p>Ajoutez un disque de 15 Go à votre machine virtuelle VirtualBox :</p>
+                    <ol>
+                        <li>Arrêtez votre machine virtuelle si elle est en cours d'exécution.</li>
+                        <li>Accédez aux paramètres de votre VM dans VirtualBox.</li>
+                        <li>Allez dans la section "Stockage".</li>
+                        <li>Ajoutez un nouveau disque dur de 15 Go.</li>
+                        <li>Démarrez votre machine virtuelle.</li>
+                    </ol>
+                    <p>Une fois la machine démarrée, identifiez le nouveau disque avec la commande suivante :</p>
+                    <div class="command-block">
+                        <div class="command">lsblk</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                    <p>Vous devriez voir votre nouveau disque, probablement nommé /dev/sdb (si c'est le deuxième disque). Notez ce nom, car il sera utilisé dans les prochaines étapes.</p>
+                    <div class="note">
+                        <strong>Note de sécurité :</strong> Vérifiez toujours attentivement le nom du périphérique avant d'exécuter des commandes qui peuvent modifier les disques. Une erreur pourrait entraîner la perte de données.
+                    </div>
+                </div>
+
+                <div class="tab-content" id="tab-2">
+                    <h3>2. Partitionnement</h3>
+                    <p>Dans cette étape, vous allez diviser le disque de 15 Go en trois partitions avec les tailles suivantes :</p>
+                    <ul>
+                        <li>5 Go pour la première partition</li>
+                        <li>4 Go pour la deuxième partition</li>
+                        <li>6 Go pour la troisième partition</li>
+                    </ul>
+                   
+                    <p>Vous pouvez utiliser <code>fdisk</code> ou <code>parted</code> pour cette tâche. Voici comment procéder avec fdisk :</p>
+                   
+                    <div class="command-block">
+                        <div class="command">sudo fdisk /dev/sdb
+
+# Dans l'interface fdisk, suivez ces étapes (saisissez les commandes suivantes) :
+# Créer une nouvelle table de partition
+n
+# Primaire
+p
+# Numéro de partition (par défaut : 1)
+1
+# Premier secteur (par défaut - appuyez sur Entrée)
+
+# Dernier secteur (calculer 5G)
++5G
+# Créer la deuxième partition
+n
+p
+2
+
++4G
+# Créer la troisième partition
+n
+p
+3
+
++6G
+# Écrire les changements et quitter
+w</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                   
+                    <p>Alternative avec parted (commande unique) :</p>
+                   
+                    <div class="command-block">
+                        <div class="command">sudo parted /dev/sdb mklabel gpt mkpart primary 0% 5GB mkpart primary 5GB 9GB mkpart primary 9GB 15GB</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                   
+                    <p>Vérifiez votre travail :</p>
+                   
+                    <div class="command-block">
+                        <div class="command">lsblk</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                   
+                    <p>Vous devriez maintenant voir les trois partitions créées, probablement nommées /dev/sdb1, /dev/sdb2 et /dev/sdb3.</p>
+                </div>
+
+                <div class="tab-content" id="tab-3">
+                    <h3>3. Configuration LVM</h3>
+                   
+                    <h4>3.1 Création des volumes physiques (PV)</h4>
+                    <p>Transformez les trois partitions en volumes physiques :</p>
+                   
+                    <div class="command-block">
+                        <div class="command">sudo pvcreate /dev/sdb1
+sudo pvcreate /dev/sdb2
+sudo pvcreate /dev/sdb3</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                   
+                    <p>Vérifiez que les volumes physiques ont été créés correctement :</p>
+                   
+                    <div class="command-block">
+                        <div class="command">sudo pvs
+sudo pvdisplay</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                   
+                    <h4>3.2 Création du groupe de volumes (VG)</h4>
+                    <p>Créez un groupe de volumes nommé "etudiant_vg" en utilisant les deux premières partitions :</p>
+                   
+                    <div class="command-block">
+                        <div class="command">sudo vgcreate etudiant_vg /dev/sdb1 /dev/sdb2</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                   
+                    <p>Vérifiez que le groupe de volumes a été créé correctement :</p>
+                   
+                    <div class="command-block">
+                        <div class="command">sudo vgs
+sudo vgdisplay etudiant_vg</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                   
+                    <h4>3.3 Extension du groupe de volumes</h4>
+                    <p>Ajoutez la troisième partition au groupe de volumes :</p>
+                   
+                    <div class="command-block">
+                        <div class="command">sudo vgextend etudiant_vg /dev/sdb3</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                   
+                    <p>Vérifiez que le groupe de volumes a bien été étendu :</p>
+                   
+                    <div class="command-block">
+                        <div class="command">sudo vgdisplay etudiant_vg</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                   
+                    <p>Vous devriez constater que la taille du groupe de volumes a augmenté d'environ 6 Go, correspondant à la taille de la troisième partition.</p>
+                </div>
+
+                <div class="tab-content" id="tab-4">
+                    <h3>4. Création et gestion des volumes logiques</h3>
+                   
+                    <h4>4.1 Création des volumes logiques</h4>
+                    <p>Créez deux volumes logiques dans le groupe de volumes "etudiant_vg" :</p>
+                   
+                    <div class="command-block">
+                        <div class="command">sudo lvcreate -L 3G -n lv_data etudiant_vg
+sudo lvcreate -L 5G -n lv_backup etudiant_vg</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                   
+                    <p>Vérifiez que les volumes logiques ont été créés correctement :</p>
+                   
+                    <div class="command-block">
+                        <div class="command">sudo lvs
+sudo lvdisplay etudiant_vg</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                   
+                    <h4>4.2 Formatage des volumes logiques</h4>
+                    <p>Formatez les volumes logiques avec les systèmes de fichiers spécifiés :</p>
+                   
+                    <div class="command-block">
+                        <div class="command">sudo mkfs.ext4 /dev/etudiant_vg/lv_data
+sudo mkfs.xfs /dev/etudiant_vg/lv_backup</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                   
+                    <h4>4.3 Montage des volumes logiques</h4>
+                    <p>Créez les points de montage et montez les volumes logiques :</p>
+                   
+                    <div class="command-block">
+                        <div class="command">sudo mkdir -p /mnt/data /mnt/backup
+sudo mount /dev/etudiant_vg/lv_data /mnt/data
+sudo mount /dev/etudiant_vg/lv_backup /mnt/backup</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                   
+                    <p>Vérifiez que les volumes logiques ont été montés correctement :</p>
+                   
+                    <div class="command-block">
+                        <div class="command">df -h | grep '/mnt'</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                   
+                    <p>Pour que les volumes soient montés automatiquement au démarrage, ajoutez les entrées suivantes au fichier /etc/fstab :</p>
+                   
+                    <div class="command-block">
+                        <div class="command">sudo bash -c 'echo "/dev/etudiant_vg/lv_data /mnt/data ext4 defaults 0 2" >> /etc/fstab'
+sudo bash -c 'echo "/dev/etudiant_vg/lv_backup /mnt/backup xfs defaults 0 2" >> /etc/fstab'</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="tab-5">
+                    <h3>5. Extension dynamique</h3>
+                   
+                    <p>Dans cette étape, vous allez augmenter la taille du volume logique lv_data de 2 Go et ajuster le système de fichiers pour utiliser ce nouvel espace.</p>
+                   
+                    <h4>5.1 Extension du volume logique</h4>
+                    <p>Étendez la taille du volume logique lv_data de 2 Go :</p>
+                   
+                    <div class="command-block">
+                        <div class="command">sudo lvextend -L +2G /dev/etudiant_vg/lv_data</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                   
+                    <p>Vérifiez que la taille du volume logique a bien été augmentée :</p>
+                   
+                    <div class="command-block">
+                        <div class="command">sudo lvdisplay /dev/etudiant_vg/lv_data</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                   
+                    <h4>5.2 Ajustement du système de fichiers</h4>
+                    <p>Comme évoqué dans la partie théorique, l'extension du volume logique ne suffit pas, il faut aussi étendre le système de fichiers pour qu'il utilise ce nouvel espace. Pour un système de fichiers ext4 :</p>
+                   
+                    <div class="command-block">
+                        <div class="command">sudo resize2fs /dev/etudiant_vg/lv_data</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                   
+                    <p>Vérifiez que l'espace disponible a bien augmenté :</p>
+                   
+                    <div class="command-block">
+                        <div class="command">df -h /mnt/data</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                   
+                    <p>Vous devriez maintenant voir que /mnt/data a une taille de 5 Go (3 Go initiaux + 2 Go d'extension).</p>
+                   
+                    <div class="note">
+                        <p><strong>Note :</strong> Si le volume logique était au format XFS, vous auriez utilisé la commande <code>xfs_growfs</code> au lieu de <code>resize2fs</code> :</p>
+                        <div class="command-block">
+                            <div class="command">sudo xfs_growfs /mnt/data</div>
+                            <button class="copy-btn">Copier</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="tab-6">
+                    <h3>6. Nettoyage</h3>
+                   
+                    <p>Dans cette dernière étape pratique, vous allez démonter et supprimer le volume logique lv_backup.</p>
+                   
+                    <h4>6.1 Démontage du volume logique</h4>
+                    <p>Commencez par démonter le volume logique :</p>
+                   
+                    <div class="command-block">
+                        <div class="command">sudo umount /mnt/backup</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                   
+                    <h4>6.2 Suppression du volume logique</h4>
+                    <p>Supprimez le volume logique :</p>
+                   
+                    <div class="command-block">
+                        <div class="command">sudo lvremove /dev/etudiant_vg/lv_backup</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                   
+                    <p>Le système vous demandera de confirmer la suppression. Tapez "y" pour confirmer.</p>
+                   
+                    <h4>6.3 Vérification</h4>
+                    <p>Vérifiez que le volume logique a bien été supprimé :</p>
+                   
+                    <div class="command-block">
+                        <div class="command">sudo lvs</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                   
+                    <h4>6.4 Modification du fichier fstab</h4>
+                    <p>Comme vous avez supprimé le volume logique, vous devez aussi supprimer l'entrée correspondante du fichier /etc/fstab pour éviter des erreurs au démarrage :</p>
+                   
+                    <div class="command-block">
+                        <div class="command">sudo sed -i '/\/dev\/etudiant_vg\/lv_backup/d' /etc/fstab</div>
+                        <button class="copy-btn">Copier</button>
+                    </div>
+                   
+                    <p>Cette commande supprime la ligne contenant "/dev/etudiant_vg/lv_backup" du fichier /etc/fstab.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="analysis">
+            <h2>Partie 3: Analyse critique</h2>
+           
+            <h3>Scénario professionnel justifiant l'utilisation de LVM</h3>
+            <p>Voici un exemple de scénario professionnel dans lequel l'utilisation de LVM serait particulièrement pertinente :</p>
+           
+            <div class="theory-item">
+                <h4>Scénario : Serveur de base de données en croissance</h4>
+                <p>Imaginez une entreprise qui gère un serveur de base de données dont le volume de données augmente régulièrement. Ce serveur a les caractéristiques suivantes :</p>
+                <ul>
+                    <li>Il héberge plusieurs bases de données critiques qui doivent rester accessibles 24/7</li>
+                    <li>La taille des données augmente de manière imprévisible selon les projets</li>
+                    <li>Des sauvegardes à chaud sont nécessaires pour garantir la continuité du service</li>
+                    <li>Le matériel est régulièrement mis à niveau avec l'ajout de nouveaux disques</li>
+                </ul>
+               
+                <p><strong>Justification de l'utilisation de LVM :</strong></p>
+                <ul>
+                    <li><strong>Extension sans interruption</strong> : L'espace de stockage peut être augmenté sans avoir à arrêter le serveur.</li>
+                    <li><strong>Flexibilité de répartition</strong> : Les différentes bases de données peuvent voir leur espace alloué augmenter selon les besoins.</li>
+                    <li><strong>Snapshots pour sauvegardes</strong> : Des instantanés peuvent être créés pour les sauvegardes sans interrompre le service.</li>
+                    <li><strong>Intégration de nouveaux disques</strong> : De nouveaux disques physiques peuvent être ajoutés au groupe de volumes existant sans reconfiguration majeure.</li>
+                    <li><strong>Migration à chaud</strong> : Les données peuvent être migrées entre différents disques physiques sans interruption de service.</li>
+                </ul>
+            </div>
+           
+            <h3>Risques associés au retrait d'un volume physique utilisé</h3>
+            <p>Tenter de retirer un volume physique (PV) qui est activement utilisé dans un groupe de volumes (VG) présente plusieurs risques majeurs :</p>
+           
+            <div class="theory-item">
+                <h4>Risques et conséquences</h4>
+                <ul>
+                    <li><strong>Perte de données</strong> : Si les données stockées sur le volume physique ne sont pas correctement migrées avant le retrait, elles seront définitivement perdues.</li>
+                    <li><strong>Corruption du système de fichiers</strong> : Le retrait forcé d'un PV peut entraîner une corruption des systèmes de fichiers sur les volumes logiques qui utilisent ce PV.</li>
+                    <li><strong>Indisponibilité des services</strong> : Les applications qui dépendent des volumes logiques touchés deviendront inaccessibles.</li>
+                    <li><strong>Instabilité du système</strong> : Dans certains cas, cela peut provoquer des erreurs au niveau du système d'exploitation, voire des pannes systèmes.</li>
+                    <li><strong>Difficulté de récupération</strong> : Sans sauvegarde préalable, la récupération des données perdues peut être très complexe, coûteuse, voire impossible.</li>
+                </ul>
+               
+                <h4>Procédure sécurisée de retrait</h4>
+                <p>Pour retirer un volume physique de manière sécurisée, il faut suivre une procédure précise :</p>
+                <ol>
+                    <li>S'assurer qu'il y a suffisamment d'espace libre sur les autres volumes physiques du groupe.</li>
+                    <li>Utiliser <code>pvmove</code> pour migrer toutes les données du volume physique à retirer vers d'autres volumes physiques.</li>
+                    <li>Utiliser <code>vgreduce</code> pour retirer le volume physique du groupe de volumes.</li>
+                    <li>Seulement alors, utiliser <code>pvremove</code> pour supprimer la signature LVM du volume physique.</li>
+                </ol>
+               
+                <div class="command-block">
+                    <div class="command"># Vérifier si le PV contient des extents alloués
+sudo pvdisplay /dev/sdXY
+
+# Migrer les données (peut prendre du temps)
+sudo pvmove /dev/sdXY
+
+# Retirer le PV du groupe de volumes
+sudo vgreduce nom_du_groupe /dev/sdXY
+
+# Supprimer la signature LVM
+sudo pvremove /dev/sdXY</div>
+                    <button class="copy-btn">Copier</button>
+                </div>
+            </div>
+        </section>
+       
+        <section id="report">
+            <h2>Générateur de rapport</h2>
+           
+            <p>Utilisez cet outil pour générer un modèle de rapport basé sur votre travail. Vous pourrez ensuite personnaliser ce modèle avec vos observations, captures d'écran et résultats spécifiques.</p>
+           
+            <div class="tab-container">
+                <div class="tab-buttons">
+                    <button class="tab-button active" data-tab="template-tab">Modèle de rapport</button>
+                    <button class="tab-button" data-tab="custom-tab">Rapport personnalisé</button>
+                </div>
+               
+                <div class="tab-content active" id="template-tab">
+                    <h3>Modèle de rapport</h3>
+                    <pre id="report-template">
+# Rapport TP : Découverte et manipulation de LVM sous Linux
+
+## Introduction
+Ce rapport présente les résultats du travail pratique sur la découverte et la manipulation de LVM (Logical Volume Manager) sous Linux. L'objectif était de comprendre les principes fondamentaux de la gestion de stockage avec LVM et de mettre en pratique ces concepts à travers des manipulations concrètes.
+
+## Partie 1 : Compréhension théorique
+
+### Volume Physique (PV)
+Un volume physique est une partition ou un disque entier qui a été initialisé pour être utilisé avec LVM. Il constitue la base physique sur laquelle repose LVM et est divisé en extents physiques (PE) de taille identique.
+
+### Groupe de Volumes (VG)
+Un groupe de volumes est une collection de volumes physiques (PV) qui sont combinés pour former un pool de stockage. Il permet de regrouper l'espace de stockage disponible sur plusieurs disques et de le gérer comme une seule unité logique.
+
+### Volume Logique (LV)
+Un volume logique est créé à partir de l'espace disponible dans un groupe de volumes. Il est l'équivalent d'une partition, mais avec beaucoup plus de flexibilité en termes de redimensionnement et de gestion.
+
+### Interaction entre PV, VG et LV
+[Expliquez ici l'interaction entre ces éléments selon votre compréhension]
+
+### Flexibilité de LVM vs partitionnement traditionnel
+LVM offre une plus grande flexibilité que le partitionnement traditionnel pour les raisons suivantes :
+- Redimensionnement dynamique des volumes
+- Gestion de l'espace non contigü
+- Ajout de stockage à chaud
+- Création d'instantanés pour les sauvegardes
+
+### Conséquence d'une extension de volume sans ajustement du système de fichiers
+[Expliquez ici les conséquences selon votre compréhension]
+
+## Partie 2 : Manipulations pratiques
+
+### 1. Préparation
+[Insérez ici la sortie de la commande lsblk montrant le disque ajouté]
+
+### 2. Partitionnement
+Commandes utilisées pour partitionner le disque :[Insérez ici la sortie de lsblk montrant les partitions créées]
+
+### 3. Configuration LVM
+#### Création des volumes physiques
+#### Création du groupe de volumes
+#### Extension du groupe de volumes
+### 4. Création et gestion des volumes logiques
+#### Création des volumes logiques
+#### Formatage et montage
+### 6. Nettoyage
+## Partie 3 : Analyse critique
+
+### Scénario professionnel justifiant l'utilisation de LVM
+[Décrivez ici un scénario professionnel pertinent]
+
+### Risques associés au retrait d'un volume physique utilisé
+[Analysez ici les risques et les précautions à prendre]
+
+## Conclusion
+[Résumez ici votre expérience et les enseignements tirés de ce TP]
+
+## Annexes
+[Ajoutez ici des captures d'écran ou informations supplémentaires si nécessaire]
+                    </pre>
+                    <button id="copy-template">Copier le modèle</button>
+                </div>
+                
+                <div class="tab-content" id="custom-tab">
+                    <h3>Personnalisez votre rapport</h3>
+                    <p>Utilisez cet éditeur pour créer votre rapport personnalisé basé sur le modèle et vos résultats spécifiques :</p>
+                    <textarea id="custom-report" placeholder="Collez le modèle ici et personnalisez-le avec vos résultats..."></textarea>
+                    <button id="report-download">Télécharger le rapport en TXT</button>
+                </div>
+            </div>
+        </section>
+        
+        <div id="loading">
+            <div class="loader"></div>
+            <p>Chargement en cours...</p>
+        </div>
+    </div>
+
+    <script>
+        // Dark mode toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('theme-toggle');
+            
+            // Check for preferred color scheme
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+                themeToggle.textContent = 'Mode clair';
+            }
+            
+            // Listen for changes in color scheme preference
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+                if (event.matches) {
+                    document.documentElement.classList.add('dark');
+                    themeToggle.textContent = 'Mode clair';
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    themeToggle.textContent = 'Mode sombre';
+                }
+            });
+            
+            // Toggle dark/light mode
+            themeToggle.addEventListener('click', function() {
+                document.documentElement.classList.toggle('dark');
+                
+                if (document.documentElement.classList.contains('dark')) {
+                    themeToggle.textContent = 'Mode clair';
+                } else {
+                    themeToggle.textContent = 'Mode sombre';
+                }
+            });
+            
+            // Navigation smooth scroll
+            document.querySelectorAll('nav a').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href').substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                });
+            });
+            
+            // Copy buttons functionality
+            document.querySelectorAll('.copy-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const commandBlock = this.parentElement;
+                    const commandText = commandBlock.querySelector('.command').innerText;
+                    
+                    navigator.clipboard.writeText(commandText).then(() => {
+                        const originalText = this.textContent;
+                        this.textContent = 'Copié !';
+                        
+                        setTimeout(() => {
+                            this.textContent = originalText;
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Erreur lors de la copie :', err);
+                    });
+                });
+            });
+            
+            // Tab navigation
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Remove active class from all buttons and content
+                    document.querySelectorAll('.tab-button').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked button and corresponding content
+                    this.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+            
+            // Copy template button functionality
+            document.getElementById('copy-template').addEventListener('click', function() {
+                const templateText = document.getElementById('report-template').innerText;
+                
+                navigator.clipboard.writeText(templateText).then(() => {
+                    this.textContent = 'Copié !';
+                    
+                    // Also fill the custom report textarea
+                    document.getElementById('custom-report').value = templateText;
+                    
+                    setTimeout(() => {
+                        this.textContent = 'Copier le modèle';
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Erreur lors de la copie :', err);
+                });
+            });
+            
+            // Download report functionality
+            document.getElementById('report-download').addEventListener('click', function() {
+                const reportText = document.getElementById('custom-report').value;
+                
+                if (!reportText) {
+                    alert('Veuillez d\'abord créer un rapport personnalisé.');
+                    return;
+                }
+                
+                // Create a blob with the text content
+                const blob = new Blob([reportText], { type: 'text/plain' });
+                
+                // Display instructions for saving the text
+                const reportArea = document.getElementById('custom-tab');
+                const instructionDiv = document.createElement('div');
+                instructionDiv.className = 'note';
+                instructionDiv.innerHTML = `
+                    <strong>Instructions pour sauvegarder votre rapport :</strong>
+                    <ol>
+                        <li>Sélectionnez tout le texte dans la zone de texte (Ctrl+A)</li>
+                        <li>Copiez-le (Ctrl+C)</li>
+                        <li>Collez-le dans un éditeur de texte comme Notepad, LibreOffice Writer ou Word</li>
+                        <li>Enregistrez le fichier au format souhaité (.txt, .doc ou .pdf)</li>
+                    </ol>
+                `;
+                
+                // Check if instructions already exist
+                const existingInstructions = reportArea.querySelector('.note');
+                if (existingInstructions) {
+                    existingInstructions.remove();
+                }
+                
+                // Add instructions after the textarea
+                document.getElementById('custom-report').after(instructionDiv);
+            });
+            
+            // LVM visualization steps
+            const lvmSteps = [
+                function step1() {
+                    // Initial disk
+                    document.getElementById('lvm-diagram').innerHTML = `
+                        <div class="disk">
+                            <div style="text-align: center; width: 100%;">Disque de 15Go</div>
+                        </div>
+                    `;
+                },
+                function step2() {
+                    // Partitioning
+                    document.getElementById('lvm-diagram').innerHTML = `
+                        <div class="disk">
+                            <div class="partition" style="left: 0; width: 33.3%;">5Go</div>
+                            <div class="partition" style="left: 33.3%; width: 26.7%;">4Go</div>
+                            <div class="partition" style="left: 60%; width: 40%;">6Go</div>
+                        </div>
+                    `;
+                },
+                function step3() {
+                    // Create PVs
+                    document.getElementById('lvm-diagram').innerHTML = `
+                        <div class="disk">
+                            <div class="partition pv" style="left: 0; width: 33.3%;">PV1: 5Go</div>
+                            <div class="partition pv" style="left: 33.3%; width: 26.7%;">PV2: 4Go</div>
+                            <div class="partition pv" style="left: 60%; width: 40%;">PV3: 6Go</div>
+                        </div>
+                    `;
+                },
+                function step4() {
+                    // Create VG with first 2 PVs
+                    document.getElementById('lvm-diagram').innerHTML = `
+                        <div class="disk">
+                            <div class="partition pv" style="left: 0; width: 33.3%;">PV1: 5Go</div>
+                            <div class="partition pv" style="left: 33.3%; width: 26.7%;">PV2: 4Go</div>
+                            <div class="partition pv" style="left: 60%; width: 40%;">PV3: 6Go</div>
+                        </div>
+                        <div class="vg" style="width: 60%;">
+                            Groupe de Volumes (etudiant_vg): 9Go
+                        </div>
+                    `;
+                },
+                function step5() {
+                    // Extend VG with third PV
+                    document.getElementById('lvm-diagram').innerHTML = `
+                        <div class="disk">
+                            <div class="partition pv" style="left: 0; width: 33.3%;">PV1: 5Go</div>
+                            <div class="partition pv" style="left: 33.3%; width: 26.7%;">PV2: 4Go</div>
+                            <div class="partition pv" style="left: 60%; width: 40%;">PV3: 6Go</div>
+                        </div>
+                        <div class="vg" style="width: 100%;">
+                            Groupe de Volumes (etudiant_vg): 15Go
+                        </div>
+                    `;
+                },
+                function step6() {
+                    // Create LVs
+                    document.getElementById('lvm-diagram').innerHTML = `
+                        <div class="disk">
+                            <div class="partition pv" style="left: 0; width: 33.3%;">PV1: 5Go</div>
+                            <div class="partition pv" style="left: 33.3%; width: 26.7%;">PV2: 4Go</div>
+                            <div class="partition pv" style="left: 60%; width: 40%;">PV3: 6Go</div>
+                        </div>
+                        <div class="vg" style="width: 100%;">
+                            Groupe de Volumes (etudiant_vg): 15Go
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <div class="lv" style="width: 20%;">lv_data: 3Go (ext4)</div>
+                            <div class="lv" style="width: 33.3%;">lv_backup: 5Go (XFS)</div>
+                            <div style="flex-grow: 1; text-align: center; padding-top: 10px;">Espace libre: 7Go</div>
+                        </div>
+                    `;
+                },
+                function step7() {
+                    // Extend LV
+                    document.getElementById('lvm-diagram').innerHTML = `
+                        <div class="disk">
+                            <div class="partition pv" style="left: 0; width: 33.3%;">PV1: 5Go</div>
+                            <div class="partition pv" style="left: 33.3%; width: 26.7%;">PV2: 4Go</div>
+                            <div class="partition pv" style="left: 60%; width: 40%;">PV3: 6Go</div>
+                        </div>
+                        <div class="vg" style="width: 100%;">
+                            Groupe de Volumes (etudiant_vg): 15Go
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <div class="lv" style="width: 33.3%;">lv_data: 5Go (ext4)</div>
+                            <div class="lv" style="width: 33.3%;">lv_backup: 5Go (XFS)</div>
+                            <div style="flex-grow: 1; text-align: center; padding-top: 10px;">Espace libre: 5Go</div>
+                        </div>
+                    `;
+                },
+                function step8() {
+                    // Remove LV
+                    document.getElementById('lvm-diagram').innerHTML = `
+                        <div class="disk">
+                            <div class="partition pv" style="left: 0; width: 33.3%;">PV1: 5Go</div>
+                            <div class="partition pv" style="left: 33.3%; width: 26.7%;">PV2: 4Go</div>
+                            <div class="partition pv" style="left: 60%; width: 40%;">PV3: 6Go</div>
+                        </div>
+                        <div class="vg" style="width: 100%;">
+                            Groupe de Volumes (etudiant_vg): 15Go
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <div class="lv" style="width: 33.3%;">lv_data: 5Go (ext4)</div>
+                            <div style="flex-grow: 1; text-align: center; padding-top: 10px;">Espace libre: 10Go</div>
+                        </div>
+                    `;
+                }
+            ];
+            
+            // Initialize visualization with first step
+            lvmSteps[0]();
+            
+            // Add event listeners to step buttons
+            for (let i = 1; i <= 8; i++) {
+                document.getElementById(`step${i}`).addEventListener('click', function() {
+                    lvmSteps[i-1]();
+                });
+            }
+        });
+    </script>
+</body>
+</html>
